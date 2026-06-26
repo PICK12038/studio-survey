@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 - 画室调查问卷</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+.chart-bar { display:flex;align-items:center;gap:12px;padding:6px 0; }
+.chart-bar .label { width:80px;font-size:13px;text-align:right;flex-shrink:0; }
+.chart-bar .bar-wrap { flex:1;height:24px;background:#f0f0f5;border-radius:4px;overflow:hidden; }
+.chart-bar .bar-fill { height:100%;background:var(--primary);border-radius:4px;transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px; }
+.chart-bar .bar-val { font-size:12px;color:#fff;font-weight:600; }
+.section-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; }
+</style>
+</head>
+<body>
+<nav class="dash-sidebar" id="sidebar">
+    <div class="brand">画室管理后台</div>
+    <a class="nav-item active" data-tab="overview">概览</a>
+    <a class="nav-item" data-tab="teacher">教师评价</a>
+    <a class="nav-item" data-tab="canteen">饭堂评价</a>
+    <a class="nav-item" data-tab="dormitory">宿舍评价</a>
+    <a class="nav-item" data-tab="suggestions">个人建议<span class="badge" id="sug-badge">0</span></a>
+    <a class="nav-item" href="/api/admin/export">导出Excel</a>
+    <a class="nav-item" href="/admin/logout" style="margin-top:20px;border-top:1px solid rgba(255,255,255,.1)">退出登录</a>
+</nav>
+
+<main class="dash-main">
+    <div class="dash-header"><h2 id="tab-title">数据概览</h2></div>
+
+    <!-- 概览 -->
+    <div class="tab-content active" id="tab-overview">
+        <div class="stat-cards" id="stat-cards"></div>
+        <div class="card"><div class="card-title">各维度综合均分</div><div id="dim-chart"></div></div>
+    </div>
+
+    <!-- 教师评价 -->
+    <div class="tab-content" id="tab-teacher">
+        <div class="card" style="overflow-x:auto">
+            <table class="data-table" id="teacher-table">
+                <thead><tr><th>班级</th><th>教师</th><th>班主任</th><th>评价数</th><th>素描静物</th><th>素描头像</th><th>色彩</th><th>速写</th><th>讲课</th><th>辅导</th><th>作业点评</th><th>综合</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 饭堂 -->
+    <div class="tab-content" id="tab-canteen">
+        <div class="card"><div id="canteen-chart"></div></div>
+    </div>
+
+    <!-- 宿舍 -->
+    <div class="tab-content" id="tab-dormitory">
+        <div class="card"><div id="dorm-chart"></div></div>
+    </div>
+
+    <!-- 建议 -->
+    <div class="tab-content" id="tab-suggestions">
+        <div class="card" style="overflow-x:auto">
+            <table class="data-table" id="sug-table">
+                <thead><tr><th>时间</th><th>班级</th><th>评价教师</th><th>建议内容</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script>
+// Navigation
+document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.nav-item[data-tab]').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        const tab = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('tab-title').textContent = this.textContent.replace(/\d+$/,'').trim();
+        if (tab === 'overview') loadOverview();
+        else if (tab === 'teacher') loadTeacherRatings();
+        else if (tab === 'canteen') loadCanteenRatings();
+        else if (tab === 'dormitory') loadDormRatings();
+        else if (tab === 'suggestions') loadSuggestions();
+    });
+});
+
+function barChart(data, containerId) {
+    const container = document.getElementById(containerId);
+    const max = Math.max(...data.map(d => d.avg), 1);
+    container.innerHTML = data.map(d => `
+        <div class="chart-bar">
+            <div class="label">${d.name}</div>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${(d.avg/max*100).toFixed(0)}%">
+                <span class="bar-val">${d.avg}</span>
+            </div></div>
+        </div>
+    `).join('');
+}
+
+async function loadOverview() {
+    const data = await fetch('/api/admin/overview').then(r => r.json());
+    document.getElementById('stat-cards').innerHTML = `
+        <div class="stat-card"><div class="stat-num">${data.total_submissions}</div><div class="stat-label">总提交数</div></div>
+        <div class="stat-card"><div class="stat-num">${data.total_classes}</div><div class="stat-label">班级数量</div></div>
+        <div class="stat-card"><div class="stat-num">${data.total_teachers}</div><div class="stat-label">教师数量</div></div>
+        <div class="stat-card"><div class="stat-num">${data.suggestions_count}</div><div class="stat-label">建议条数</div></div>
+    `;
+    barChart(data.dimension_averages.map(d => ({name: d.name, avg: d.avg})), 'dim-chart');
+}
+
+async function loadTeacherRatings() {
+    const data = await fetch('/api/admin/teacher-ratings').then(r => r.json());
+    const tbody = document.querySelector('#teacher-table tbody');
+    const dims = ['素描静物','素描头像','色彩','速写','讲课','辅导','作业点评'];
+    tbody.innerHTML = data.map(t => {
+        let total = 0, n = 0;
+        dims.forEach(d => { const v = t.averages[d]; if (v !== undefined) { total += v; n++; } });
+        const overall = n ? (total/n).toFixed(2) : '-';
+        return `<tr>
+            <td>${t.class_name}</td><td>${t.name}</td><td>${t.is_head_teacher?'是':'否'}</td><td>${t.count}</td>
+            ${dims.map(d => `<td>${t.averages[d] !== undefined ? t.averages[d] : '-'}</td>`).join('')}
+            <td><strong>${overall}</strong></td>
+        </tr>`;
+    }).join('');
+}
+
+async function loadCanteenRatings() {
+    const data = await fetch('/api/admin/canteen-ratings').then(r => r.json());
+    barChart(data.map(d => ({name: d.dimension, avg: d.avg})), 'canteen-chart');
+}
+
+async function loadDormRatings() {
+    const data = await fetch('/api/admin/dormitory-ratings').then(r => r.json());
+    barChart(data.map(d => ({name: d.dimension, avg: d.avg})), 'dorm-chart');
+}
+
+async function loadSuggestions() {
+    const data = await fetch('/api/admin/suggestions').then(r => r.json());
+    document.getElementById('sug-badge').textContent = data.length;
+    document.querySelector('#sug-table tbody').innerHTML = data.map(s => `
+        <tr><td>${s.time||'-'}</td><td>${s.class}</td><td>${s.teacher}</td><td>${s.content}</td></tr>
+    `).join('');
+}
+
+// Initial load
+loadOverview();
+loadSuggestions(); // for badge count
+</script>
+</body>
+</html>
