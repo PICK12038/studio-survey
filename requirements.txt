@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-jinja2
-python-jose[cryptography]
-bcrypt
-openpyxl
-aiosqlite
-（内容由AI生成，仅供参考）
