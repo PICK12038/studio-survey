@@ -211,6 +211,16 @@ tr:hover td{background:var(--blue-lt)}
   .dim-label{font-size:13px}
   .container{padding:12px 8px 80px;padding-bottom:max(80px, calc(env(safe-area-inset-bottom) + 80px))}
 }
+.side-link{display:block;margin:8px 16px;padding:10px 14px;border-radius:8px;color:var(--txt3);font-size:13px;text-decoration:none;transition:all .2s;border:1px dashed var(--bor)}
+.side-link:hover{color:var(--blue);border-color:var(--blue);background:rgba(0,82,217,.04)}
+.student-link{font-size:13px;color:var(--blue);text-decoration:none;margin-right:18px;font-weight:500;transition:opacity .2s}
+.student-link:hover{opacity:.75}
+.btn-sm{padding:4px 10px;font-size:12px;border-radius:5px;border:1px solid;cursor:pointer;background:var(--bg);border-color:var(--bor);color:var(--txt);transition:all .15s}
+.btn-sm:hover{opacity:.85}
+.btn-d{color:var(--red);border-color:var(--red)}.btn-d:hover{background:var(--red);color:#fff}
+.mg-cb{width:16px;height:16px;cursor:pointer;accent-color:var(--blue)}
+#mgTbl tbody tr.sel{background:rgba(0,82,217,.06)}
+#mgTbl tbody tr.sel td{border-color:rgba(0,82,217,.12)}
 </style>
 </head>
 <body id="app"></body>
@@ -237,7 +247,7 @@ async function srv(){
   let data;try{const r=await sb.from("classes").select("*").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
   document.getElementById("app").innerHTML=`<div class="container"><h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
     <div class="steps sticky"><div class="step-d${S===1?' a':S>1?' d':''}">①选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">②评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">③饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">④确认提交</div></div>
-    <div id="sc"></div><div class="ft"><a href="#adm">管理后台</a></div></div>`;
+    <div id="sc"></div></div>`;
   const el=document.getElementById("sc");if(S===1)st1(el,data);else if(S===2)st2(el);else if(S===3)st3(el);else st4(el);
 }
 function st1(el,cls){let o='<option value="">请选择班级</option>';cls.forEach(c=>o+=`<option value="${c.id}">${x(c.name)}</option>`);el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🏫</span>所属班级</div><div class="fun-line">选个班级，开启你的评价之旅吧</div><select id="cs">${o}</select><div class="err" id="ce">请选择班级</div><button class="btn btn-p mt24" onclick="nx1()">下一步 →</button></div>`;}
@@ -273,14 +283,16 @@ function renderDashboard(){
         <div class="sm-item${curPg==='teacher'?' on':''}" onclick="switchPg('teacher')"><span class="dot"></span>教师评分</div>
         <div class="sm-item${curPg==='canteen'?' on':''}" onclick="switchPg('canteen')"><span class="dot"></span>饭堂评价</div>
         <div class="sm-item${curPg==='dormitory'?' on':''}" onclick="switchPg('dormitory')"><span class="dot"></span>宿舍评价</div>
+        <div class="sm-item${curPg==='manage'?' on':''}" onclick="switchPg('manage')"><span class="dot"></span>数据管理</div>
         <div class="sm-item${curPg==='export'?' on':''}" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
       </nav>
-      <div class="side-foot">v2.0 · 画室专用</div>
+      <a href="#s" class="side-link">📋 学生问卷端</a>
+      <div class="side-foot">v2.1 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
         <div class="topbar-l">首页 <span class="sep">›</span> <span id="breadcrumb">数据概览</span></div>
-        <div class="topbar-r"><span class="time" id="liveTime"></span><span class="logout" onclick="doLogout()">退出登录</span></div>
+        <div class="topbar-r"><a href="#s" class="student-link">学生端</a><span class="time" id="liveTime"></span><span class="logout" onclick="doLogout()">退出登录</span></div>
       </header>
       <div class="content" id="dashBody"><div class="loading">加载中...</div></div>
     </div>
@@ -326,14 +338,15 @@ function avgD(cat,table,field,extraFilter){return async()=>{let data;try{const q
 // 页面切换
 async function switchPg(pg){
   curPg=pg;
-  document.querySelectorAll(".sm-item").forEach(el=>el.classList.toggle("on",el.textContent.includes(pg==='overview'?'概览':pg==='teacher'?'教师':pg==='canteen'?'饭堂':pg==='dormitory'?'宿舍':'导出')));
-  const bc=document.getElementById("breadcrumb");if(bc)bc.textContent=pg==='overview'?'数据概览':pg==='teacher'?'教师评分':pg==='canteen'?'饭堂评价':pg==='dormitory'?'宿舍评价':'导出数据';
+  document.querySelectorAll(".sm-item").forEach(el=>el.classList.toggle("on",el.textContent.includes(pg==='overview'?'概览':pg==='teacher'?'教师':pg==='canteen'?'饭堂':pg==='dormitory'?'宿舍':pg==='manage'?'管理':'导出')));
+  const bc=document.getElementById("breadcrumb");if(bc)bc.textContent=pg==='overview'?'数据概览':pg==='teacher'?'教师评分':pg==='canteen'?'饭堂评价':pg==='dormitory'?'宿舍评价':pg==='manage'?'数据管理':'导出数据';
   await loadData(true);
   const el=document.getElementById("dashBody");if(!el)return;
   if(pg==='overview')renderOverview(el);
   else if(pg==='teacher')renderTeacher(el);
   else if(pg==='canteen')renderRating(el,"canteen_ratings","饭堂","🍽️","饭堂");
   else if(pg==='dormitory')renderRating(el,"dormitory_ratings","宿舍","🏠","宿舍");
+  else if(pg==='manage')renderManage(el);
   else if(pg==='export')renderExport(el);
 }
 function renderKPI(el,items){let h=`<div class="kpi-row">`;items.forEach(i=>h+=`<div class="kpi k-${i.c||'b'}"><div class="kpi-label">${i.l}</div><div class="kpi-n">${i.v}</div><div class="kpi-sub">${i.s||""}</div></div>`);el.innerHTML=h+`</div>`;}
@@ -341,26 +354,99 @@ function renderKPI(el,items){let h=`<div class="kpi-row">`;items.forEach(i=>h+=`
 // ===== 概览 =====
 function renderOverview(el){
   const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length,sc=ca.scnt;
-  let tAvg="-",cAvg="-",dAvg="-";
-  if(ca.r&&ca.r.length)tAvg=ag(ca.r.map(r=>r.score));
-  el.innerHTML=`<div class="kpi-row">
-    <div class="kpi k-b"><div class="kpi-label">总提交数</div><div class="kpi-n">${tc}</div><div class="kpi-sub">累计提交问卷</div></div>
-    <div class="kpi k-g"><div class="kpi-label">班级数</div><div class="kpi-n">${cc}</div><div class="kpi-sub">覆盖班级</div></div>
-    <div class="kpi k-o"><div class="kpi-label">教师数</div><div class="kpi-n">${tc2}</div><div class="kpi-sub">在职教师</div></div>
-    <div class="kpi k-p"><div class="kpi-label">建议数</div><div class="kpi-n">${sc}</div><div class="kpi-sub">含综合建议</div></div>
-    <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'人次':''}</div></div>
-  </div>`;
-  // 维度均分表
-  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const i=r.dimension.indexOf('|');return(i>0?r.dimension.slice(i+1):r.dimension)===d;}).map(r=>r.score);dr+=`<tr><td>${d}</td><td class="ta-c"><b>${ag(sc)}</b></td><td class="ta-c">${sc.length}</td></tr>`;});
-  el.innerHTML+=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📊 各维度平均分</span><button class="btn-pm sm" onclick="doExportAll()">导出全部</button></div>
-    <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>评价维度</th><th class="ta-c">均分</th><th class="ta-c">评价人次</th></tr></thead><tbody>${dr}</tbody></table></div></div>
-    <div class="sug-lst"><h4>💬 综合建议</h4>${renderSugs("综合")}</div></div>`;
-
-  // 异步加载饭堂/宿舍均分
+  let tAvg="-";if(ca.r&&ca.r.length)tAvg=ag(ca.r.map(r=>r.score));
+  // 按班级汇总
+  const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
+  const classSubs={};(ca.s||[]).forEach(s=>{if(!classSubs[s.class_id])classSubs[s.class_id]=0;classSubs[s.class_id]++;});
+  let classRows="";
+  for(let c of ca.c){
+    const cnt=classSubs[c.id]||0;
+    const sids=new Set((ca.s||[]).filter(s=>s.class_id===c.id).map(s=>s.id));
+    const scores=(ca.r||[]).filter(r=>sids.has(r.submission_id)).map(r=>r.score);
+    classRows+=`<tr><td>${x(c.name)}</td><td class="ta-c">${cnt}</td><td class="ta-c"><b>${ag(scores)}</b></td></tr>`;
+  }
+  // 维度均分
+  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{if(!r||!r.dimension)return false;const i=r.dimension.indexOf('|');return(i>0?r.dimension.slice(i+1):r.dimension)===d;}).map(r=>r.score);dr+=`<tr><td>${d}</td><td class="ta-c"><b>${ag(sc)}</b></td><td class="ta-c">${sc.length}</td></tr>`;});
+  // 综合建议
+  const sugHtml=renderSugs("综合");
+  el.innerHTML=`
+    <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📊 数据总览</span><div><button class="btn-pm sm" onclick="switchPg('manage')">数据管理</button><button class="btn-pm sm" style="margin-left:8px" onclick="doExportAll()">导出全部</button></div></div>
+      <div class="panel-body">
+        <div class="kpi-row">
+          <div class="kpi k-b"><div class="kpi-label">总提交数</div><div class="kpi-n">${tc}</div><div class="kpi-sub">累计提交问卷</div></div>
+          <div class="kpi k-g"><div class="kpi-label">覆盖班级</div><div class="kpi-n">${cc}</div><div class="kpi-sub">参与评价班级</div></div>
+          <div class="kpi k-o"><div class="kpi-label">在职教师</div><div class="kpi-n">${tc2}</div><div class="kpi-sub">可评价教师</div></div>
+          <div class="kpi k-p"><div class="kpi-label">建议条数</div><div class="kpi-n">${sc}</div><div class="kpi-sub">含综合建议</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📈 评分概览</span></div>
+      <div class="panel-body">
+        <div class="kpi-row">
+          <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'人次':''}</div></div>
+          <div class="kpi k-g"><div class="kpi-label">饭堂均分</div><div class="kpi-n" id="kpi-canteen">-</div><div class="kpi-sub">加载中</div></div>
+          <div class="kpi k-o"><div class="kpi-label">宿舍均分</div><div class="kpi-n" id="kpi-dorm">-</div><div class="kpi-sub">加载中</div></div>
+        </div>
+        <div class="sec-desc" style="margin:20px 0 8px;font-weight:600">各维度平均分</div>
+        <div class="tbl-wrap"><table><thead><tr><th>评价维度</th><th class="ta-c">均分</th><th class="ta-c">人次</th></tr></thead><tbody>${dr}</tbody></table></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📋 按班级汇总</span></div><div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th class="ta-c">提交数</th><th class="ta-c">教师均分</th></tr></thead><tbody>${classRows||'<tr><td colspan="3" class="ta-c" style="color:var(--txt3)">暂无数据</td></tr>'}</tbody></table></div></div></div>
+      <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">💬 综合建议</span></div><div class="panel-body">${sugHtml||'<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>'}</div></div>
+    </div>`;
   loadRatingAvg("canteen_ratings","饭堂").then(v=>{const e=document.getElementById("kpi-canteen");if(e)e.textContent=v;});
   loadRatingAvg("dormitory_ratings","宿舍").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
 }
 async function loadRatingAvg(table,label){try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
+
+// ===== 数据管理 =====
+let mgSel=[]; // 选中的 submission_id 列表
+function toggleSel(id){const i=mgSel.indexOf(id);i>-1?mgSel.splice(i,1):mgSel.push(id);updateSelUI();}
+function toggleAll(){const rows=document.querySelectorAll('#mgTbl tbody tr[data-sid]');const all=Array.from(rows).map(r=>r.dataset.sid);const allSel=all.every(id=>mgSel.includes(id));if(allSel){mgSel=[];}else{mgSel=all;}updateSelUI();}
+function updateSelUI(){const n=mgSel.length;document.getElementById('mgSelCnt').textContent=n;const btn=document.getElementById('mgDelBtn');if(btn){btn.disabled=n===0;btn.textContent=n>0?`批量删除 (${n})`:'批量删除';}document.querySelectorAll('#mgTbl tbody tr[data-sid]').forEach(r=>{const sid=r.dataset.sid;const cb=r.querySelector('.mg-cb');if(cb)cb.checked=mgSel.includes(sid);r.classList.toggle('sel',mgSel.includes(sid));});const all=document.getElementById('mgAll');if(all){const rows=document.querySelectorAll('#mgTbl tbody tr[data-sid]');const ids=Array.from(rows).map(r=>r.dataset.sid);all.checked=ids.length>0&&ids.every(id=>mgSel.includes(id));all.indeterminate=mgSel.length>0&&ids.some(id=>mgSel.includes(id))&&!ids.every(id=>mgSel.includes(id));}}
+
+async function renderManage(el){
+  await loadData(true);
+  const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
+  let rows="";
+  (ca.s||[]).forEach(s=>{
+    const ts=(ca.r||[]).filter(r=>r.submission_id===s.id).length;
+    const ds=ca.sg.filter(g=>g.submission_id===s.id).length;
+    rows+=`<tr data-sid="${s.id}"><td class="ta-c"><input type="checkbox" class="mg-cb" onchange="toggleSel('${s.id}')" ${mgSel.includes(s.id)?'checked':''}></td><td>${cm[s.class_id]||""}</td><td>${ts}</td><td>${ds?"<span style='color:var(--blue)'>"+ds+"条</span>":"-"}</td><td>${new Date(s.created_at).toLocaleString("zh-CN")}</td><td><button class="btn-sm btn-d" onclick="delOne('${s.id}')">删除</button></td></tr>`;
+  });
+  el.innerHTML=`
+    <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">🗂️ 数据管理</span><div><button class="btn-pm sm btn-d" id="mgDelBtn" disabled onclick="delSel()">批量删除</button></div></div>
+      <div class="panel-body">
+        <div class="flt-row"><label>已选 <b id="mgSelCnt">0</b> 条</label><span style="color:var(--txt3);font-size:12px;margin-left:8px">可多选提交记录进行批量删除</span></div>
+        <div class="tbl-wrap"><table id="mgTbl"><thead><tr><th class="ta-c" style="width:40px"><input type="checkbox" id="mgAll" onchange="toggleAll()"></th><th>班级</th><th class="ta-c">评分条数</th><th>建议内容</th><th>提交时间</th><th style="width:70px">操作</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="ta-c" style="color:var(--txt3);padding:20px">暂无提交记录</td></tr>'}</tbody></table></div>
+      </div>
+    </div>`;
+}
+async function delOne(sid){
+  if(!confirm(`确定删除该提交记录及其关联的所有评分与建议吗？`))return;
+  await delSubs([sid]);
+}
+async function delSel(){
+  if(!mgSel.length)return;
+  if(!confirm(`确定删除选中的 ${mgSel.length} 条提交记录及其关联的所有评分与建议吗？此操作不可撤销！`))return;
+  await delSubs([...mgSel]);
+}
+async function delSubs(sids){
+  const msg=document.createElement('div');msg.className='bnr';msg.textContent='正在删除...';const el=document.getElementById('dashBody');if(el)el.prepend(msg);
+  try{
+    for(let sid of sids){
+      await sb.from("teacher_ratings").delete().eq("submission_id",sid);
+      await sb.from("canteen_ratings").delete().eq("submission_id",sid);
+      await sb.from("dormitory_ratings").delete().eq("submission_id",sid);
+      await sb.from("suggestions").delete().eq("submission_id",sid);
+      await sb.from("submissions").delete().eq("id",sid);
+    }
+    mgSel=[];
+    msg.textContent=`成功删除 ${sids.length} 条记录`;msg.style.color='var(--green)';
+    setTimeout(()=>{switchPg('manage');},600);
+  }catch(e){msg.textContent='删除失败：'+e.message;msg.style.color='var(--red)';}
+}
 
 // ===== 教师评分 =====
 function renderTeacher(el){
@@ -372,7 +458,7 @@ function renderTeacher(el){
     <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select></div>
     <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
   DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody>';
-  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
+  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{if(!r||!r.dimension)return false;const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
   h+=`</tbody></table></div></div>`;
   h+=`<div class="sug-lst"><h4>📝 学生对教师的建议${tf?'（'+cm[tf]+'）':'（全部班级）'}</h4>${renderSugs("教师",tf)}</div></div>`;
   el.innerHTML=h;
@@ -410,8 +496,8 @@ function renderSugs(cat,cid){
 }
 
 // ===== 导出函数 =====
-async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter((r)=>{const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");for(let[tbl,ttl]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){let d;try{const r=await sb.from(tbl).select("dimension,score");if(!r.error)d=r.data;}catch(e){}const g={};(d||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
-async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter((r)=>{const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
+async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter((r)=>{if(!r||!r.dimension)return false;const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");for(let[tbl,ttl]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){let d;try{const r=await sb.from(tbl).select("dimension,score");if(!r.error)d=r.data;}catch(e){}const g={};(d||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
+async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter((r)=>{if(!r||!r.dimension)return false;const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
 async function doExportRating(table,title,cat){let data;try{const r=await sb.from(table).select("dimension,score");if(!r.error)data=r.data;}catch(e){}const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});const rs=[["维度","均分","人次"]];for(let k in g)rs.push([k,ag(g[k]),g[k].length]);rs.push([],["— 相关建议 —"]);pS(cat).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),title);XLSX.writeFile(wb,`画室_${title}_${dt()}.xlsx`);}
 
 window.addEventListener("hashchange",go);go();
