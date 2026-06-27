@@ -7,10 +7,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18/dist/xlsx.full.min.js"></script>
 <style>
+/* ====== 全局基础 ====== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--blue:#0052d9;--blue-lt:#e8f0fe;--blue-hv:#003db8;--green:#00a870;--green-bg:#e6f7f0;--red:#d54941;--red-bg:#fdece8;--bg:#f3f4f6;--card:#fff;--txt:#1d2129;--txt2:#646a73;--txt3:#8f959e;--brd:#e5e6eb;--rds:10px;--sh:0 1px 4px rgba(0,0,0,.04)}
+:root{--blue:#0052d9;--blue-lt:#e8f0fe;--blue-hv:#003db8;--green:#00a870;--green-bg:#e6f7f0;--red:#d54941;--red-bg:#fdece8;--orange:#e37318;--orange-bg:#fff3e8;--purple:#7c3aed;--purple-bg:#f3e8ff;--bg:#f0f2f5;--card:#fff;--txt:#1d2129;--txt2:#646a73;--txt3:#8f959e;--brd:#e5e6eb;--brd2:#e8eaed;--rds:8px;--sh:0 1px 2px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04)}
 html{font-size:16px;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:var(--txt);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ====== 学生端 ====== */
 .container{max-width:780px;margin:0 auto;padding:24px 16px 48px}
 .card{background:var(--card);border-radius:var(--rds);padding:24px 20px;margin-bottom:16px;box-shadow:var(--sh);border:1px solid var(--brd)}
 .sec-tit{font-size:16px;font-weight:600;color:var(--txt);margin-bottom:4px;display:flex;align-items:center;gap:8px}
@@ -45,10 +48,18 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .btn-p:disabled{background:#bbd3fb;cursor:not-allowed;transform:none}
 .btn-o{background:var(--card);color:var(--blue);border:1px solid var(--blue)}
 .btn-o:hover{background:var(--blue-lt)}
-.btn-sm{padding:7px 14px;font-size:12px;border-radius:6px}
-.btn-x{background:var(--card);color:var(--blue);border:1px solid #b8c5e0;padding:7px 14px;font-size:12px;border-radius:6px;cursor:pointer;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
-.btn-x:hover{background:var(--blue-lt);border-color:var(--blue)}
-.btn-x::before{content:'↓ '}
+.row2{display:flex;gap:10px}.row2 .btn{flex:1}
+.err{color:var(--red);font-size:12px;margin-top:4px;display:none;align-items:center;gap:4px}
+.err.s{display:flex}
+.login-bx{max-width:400px;margin:80px auto}
+.login-bx .hd{text-align:center;margin-bottom:28px}
+.login-bx .hd h1{font-size:24px;color:var(--blue);font-weight:700}
+.login-bx input{width:100%;padding:13px 14px;border:1px solid var(--brd);border-radius:8px;font-size:14px;margin-bottom:14px;transition:border .15s}
+.login-bx input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-lt)}
+.ok-box{text-align:center;padding:32px 16px}
+.ok-box .ok{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--green)}
+.tc{text-align:center}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
 .nav{display:flex;justify-content:space-between;align-items:center;padding:6px 0 20px}
 .nav .brand{font-size:18px;font-weight:700;color:var(--txt)}
 .nav .brand em{color:var(--blue);font-style:normal}
@@ -58,56 +69,130 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .step-d{flex:1;text-align:center;padding:9px 4px;border-radius:8px;background:#e8eaed;font-size:12px;color:var(--txt3);transition:all .2s}
 .step-d.a{background:var(--blue);color:#fff;font-weight:600}
 .step-d.d{background:var(--green);color:#fff}
-.ok-box{text-align:center;padding:32px 16px}
-.ok-box .ok{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--green)}
-.tc{text-align:center}
-.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
-.err{color:var(--red);font-size:12px;margin-top:4px;display:none;align-items:center;gap:4px}
-.err.s{display:flex}
-.login-bx{max-width:400px;margin:80px auto}
-.login-bx .hd{text-align:center;margin-bottom:28px}
-.login-bx .hd h1{font-size:24px;color:var(--blue);font-weight:700}
-.login-bx input{width:100%;padding:13px 14px;border:1px solid var(--brd);border-radius:8px;font-size:14px;margin-bottom:14px;transition:border .15s}
-.login-bx input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-lt)}
-.kpi-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
-.kpi{padding:18px 16px;border-radius:10px;text-align:center}
-.kpi.b{background:var(--blue-lt);color:var(--blue)}
-.kpi.g{background:var(--green-bg);color:var(--green)}
-.kpi.o{background:#fff3e0;color:#e65100}
-.kpi.p{background:#f3e8ff;color:#7c3aed}
-.kpi .n{font-size:28px;font-weight:700}
-.kpi .l{font-size:12px;margin-top:2px;opacity:.8}
-.tbs{display:flex;gap:4px;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-.tbs button{padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;background:transparent;border:none;transition:all .15s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;color:var(--txt2);font-weight:500}
-.tbs button:hover{background:#e8eaed;color:var(--txt)}
-.tbs button.on{background:var(--blue);color:#fff}
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--brd)}
-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--brd)}
-th{background:#f7f8fa;font-weight:600;color:var(--txt2);font-size:12px;position:sticky;top:0}
-tr:hover td{background:#f7f8fa}
-.pnl-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.sel-sm{padding:8px 32px 8px 10px;font-size:13px;background-position:right 8px center;width:auto;min-width:140px}
-.sug-lst{border-top:1px solid var(--brd);margin-top:16px;padding-top:14px}
-.sug-lst h4{font-size:13px;color:var(--txt2);margin-bottom:10px;font-weight:600}
-.sug-it{padding:12px 0;border-bottom:1px solid var(--brd)}
-.sug-it:last-child{border-bottom:none}
-.sug-it .meta{font-size:11px;color:var(--txt3);margin-bottom:4px}
-.sug-it .body{font-size:13px;color:var(--txt);line-height:1.6;white-space:pre-wrap}
-.empty{text-align:center;padding:24px;color:var(--txt3);font-size:13px}
-.loading{text-align:center;padding:32px;color:var(--txt3);font-size:14px}
 .bnr{background:#fff3e0;color:#92400e;padding:12px 16px;border-radius:8px;font-size:13px;text-align:center;margin-bottom:16px;border:1px solid #fde68a}
 .ft{text-align:center;margin-top:20px}
 .ft a{color:var(--txt3);font-size:11px;text-decoration:none;transition:color .15s}
 .ft a:hover{color:var(--blue)}
-.row2{display:flex;gap:10px}
-.row2 .btn{flex:1}
-@media(min-width:641px){.container{padding:28px 28px 56px}.card{padding:28px 24px}.sec-tit{font-size:18px}.sbtn{min-width:38px;height:38px;font-size:14px}.tc-card{padding:20px}.score-row{padding:13px 0}.kpi-row{grid-template-columns:repeat(4,1fr)}.kpi .n{font-size:34px}.tbs button{padding:10px 22px;font-size:14px}}
-@media(max-width:640px){.sbtn{min-width:30px;height:30px;font-size:12px;border-radius:6px}.dim-label{font-size:13px}.score-btns{gap:3px}.tc-card{padding:14px}.tname{font-size:14px}}
-@media(max-width:400px){.container{padding:14px 10px 36px}.card{padding:16px 12px;border-radius:10px}.sbtn{min-width:27px;height:27px;font-size:11px;border-radius:5px}.score-btns{gap:2px}.step-d{font-size:10px;padding:7px 2px}.tname{font-size:13px}.kpi-row{grid-template-columns:1fr}.score-row{gap:4px;padding:9px 0}.dim-label{font-size:12px}select{font-size:14px;padding:11px}.tbs{gap:2px}.tbs button{padding:8px 12px;font-size:12px}}
+.fc{text-align:center;padding:15px;color:var(--txt3);font-size:12px}
+
+/* ====== 管理后台专用 ====== */
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:10}
+.side-logo{padding:20px 20px 16px;border-bottom:1px solid var(--brd)}
+.side-logo h2{font-size:17px;font-weight:700;color:var(--txt)}
+.side-logo h2 em{color:var(--blue);font-style:normal}
+.side-logo p{font-size:11px;color:var(--txt3);margin-top:2px}
+.side-menu{flex:1;padding:8px 0}
+.sm-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;font-size:14px;color:var(--txt2);transition:all .15s;border-left:3px solid transparent;margin:2px 0;user-select:none}
+.sm-item:hover{background:#f5f6f8;color:var(--txt)}
+.sm-item.on{background:var(--blue-lt);color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.sm-item .dot{width:6px;height:6px;border-radius:50%;background:var(--txt3);flex-shrink:0}
+.sm-item.on .dot{background:var(--blue)}
+.side-foot{padding:16px 20px;border-top:1px solid var(--brd);font-size:12px;color:var(--txt3)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid var(--brd);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:5}
+.topbar-l{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt3)}
+.topbar-l span{color:var(--txt2)}
+.topbar-l .sep{color:var(--brd)}
+.topbar-r{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--txt3)}
+.topbar-r .time{font-family:Consolas,Monaco,monospace;font-size:12px;color:var(--txt2)}
+.topbar-r .logout{color:var(--txt3);cursor:pointer;font-size:12px;padding:5px 12px;border-radius:4px;transition:all .15s;border:1px solid transparent}
+.topbar-r .logout:hover{color:var(--red);border-color:var(--red-bg);background:var(--red-bg)}
+.content{padding:20px 24px 32px;flex:1}
+.pg-tit{font-size:20px;font-weight:600;color:var(--txt);margin-bottom:4px}
+.pg-desc{font-size:13px;color:var(--txt3);margin-bottom:20px}
+
+/* KPI 卡片行 */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:var(--rds);padding:18px 20px;box-shadow:var(--sh);border-left:3px solid transparent;transition:box-shadow .15s}
+.kpi:hover{box-shadow:0 2px 6px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06)}
+.kpi.k-b{border-left-color:var(--blue)}.kpi.k-b .kpi-n{color:var(--blue)}
+.kpi.k-g{border-left-color:var(--green)}.kpi.k-g .kpi-n{color:var(--green)}
+.kpi.k-o{border-left-color:var(--orange)}.kpi.k-o .kpi-n{color:var(--orange)}
+.kpi.k-r{border-left-color:var(--red)}.kpi.k-r .kpi-n{color:var(--red)}
+.kpi.k-p{border-left-color:var(--purple)}.kpi.k-p .kpi-n{color:var(--purple)}
+.kpi-label{font-size:12px;color:var(--txt3);margin-bottom:6px;font-weight:500}
+.kpi-n{font-size:28px;font-weight:700;font-family:Consolas,Monaco,"SF Mono",monospace;line-height:1.2}
+.kpi-sub{font-size:11px;color:var(--txt3);margin-top:4px}
+
+/* 内容面板卡片 */
+.panel{background:var(--card);border-radius:var(--rds);box-shadow:var(--sh);overflow:hidden}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:10px}
+.panel-hd-tit{font-size:15px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px}
+.panel-hd-act{display:flex;align-items:center;gap:8px}
+.panel-body{padding:20px;overflow-x:auto}
+.panel-body.np{padding:0}
+
+/* 筛选区 */
+.flt-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 20px 16px}
+.flt-row label{font-size:13px;color:var(--txt2);white-space:nowrap}
+.flt-row select{padding:7px 30px 7px 10px;font-size:13px;width:auto;min-width:140px;background-position:right 8px center}
+
+/* 表格 */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f7f8fa;font-weight:600;color:var(--txt2);font-size:12px;text-align:left;padding:12px 14px;border-bottom:2px solid var(--brd);white-space:nowrap;position:sticky;top:0}
+td{padding:11px 14px;border-bottom:1px solid var(--brd2);color:var(--txt)}
+tr:nth-child(even) td{background:#fafbfc}
+tr:hover td{background:var(--blue-lt)}
+.ta-r{text-align:right}
+.ta-c{text-align:center}
+
+/* 操作按钮 */
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:5px;border:1px solid var(--brd);background:var(--card);color:var(--txt2);cursor:pointer;transition:all .15s;font-weight:500}
+.btn-sm:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-lt)}
+.btn-sm.danger:hover{color:var(--red);border-color:var(--red);background:var(--red-bg)}
+.btn-pm{background:var(--blue);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;cursor:pointer;transition:all .15s;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn-pm:hover{background:var(--blue-hv)}
+.btn-pm::before{content:'↓ '}
+.btn-pm.sm{padding:6px 12px;font-size:12px}
+
+/* 建议列表 */
+.sug-lst{border-top:1px solid var(--brd);padding:16px 20px}
+.sug-lst h4{font-size:14px;color:var(--txt);margin-bottom:12px;font-weight:600}
+.sug-it{background:#fafbfc;border:1px solid var(--brd2);border-radius:6px;padding:12px 14px;margin-bottom:8px}
+.sug-it:last-child{margin-bottom:0}
+.sug-it .meta{font-size:11px;color:var(--txt3);margin-bottom:4px}
+.sug-it .body{font-size:13px;color:var(--txt);line-height:1.6;white-space:pre-wrap}
+
+/* 空状态 */
+.empty{text-align:center;padding:40px 20px;color:var(--txt3);font-size:14px}
+.empty .empty-ico{font-size:36px;margin-bottom:12px;opacity:.5}
+.loading{text-align:center;padding:40px;color:var(--txt3);font-size:14px}
+
+/* 分页 */
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding:16px 20px;border-top:1px solid var(--brd);font-size:13px}
+.pager .info{color:var(--txt3);margin-right:12px;font-size:12px}
+.pager button{min-width:32px;height:32px;border:1px solid var(--brd);border-radius:4px;background:var(--card);color:var(--txt2);cursor:pointer;font-size:13px;transition:all .15s}
+.pager button:hover{color:var(--blue);border-color:var(--blue)}
+.pager button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* 图表卡片 */
+.chart-card{margin-bottom:20px}
+
+/* 响应式 */
+@media(max-width:768px){
+  .sidebar{width:60px}.side-logo h2,.side-logo p,.sm-item span:not(.sm-ico),.side-foot{display:none}
+  .sm-item{justify-content:center;padding:12px;border-left:none}
+  .sm-item.on{background:var(--blue-lt);border-left:none;border-radius:6px;margin:2px 8px}
+  .content{padding:16px}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:0 16px}
+}
+@media(max-width:400px){
+  .kpi-row{grid-template-columns:1fr}
+}
+@media(min-width:641px){
+  .container{padding:28px 28px 56px}.card{padding:28px 24px}.sec-tit{font-size:18px}
+  .sbtn{min-width:38px;height:38px;font-size:14px}.tc-card{padding:20px}.score-row{padding:13px 0}
+}
+@media(max-width:640px){
+  .sbtn{min-width:30px;height:30px;font-size:12px;border-radius:6px}.dim-label{font-size:13px}
+  .score-btns{gap:3px}.tc-card{padding:14px}.tname{font-size:14px}
+}
 </style>
 </head>
-<body><div class="container" id="app"></div>
+<body id="app"></body>
 <script>
 const SB="https://iemiujgdblsuvzsvirju.supabase.co";
 const SK="sb_publishable_LCj2enxyQTWRIzXZ7LPaFA_doIwMzCx";
@@ -115,7 +200,8 @@ const ADM={u:"admin",p:"admin123"};
 const DM=["教学态度","课堂讲解","示范教学","课后辅导","作业点评"];
 const sb=supabase.createClient(SB,SK);
 
-function go(){const h=location.hash.slice(1)||"s";document.getElementById("app").innerHTML="";if(h==="s")srv();else if(h==="ok")done();else if(h==="adm")adm();else if(h==="dash")dash();else srv();}
+function go(){const h=location.hash.slice(1)||"s";
+  if(h==="s"||h==="ok")srv();else if(h==="adm"||h==="dash")admEnter();else srv();}
 let S=1,C=null,T=null,TS={},TC={},CS={},CC={},DS={},DC={};
 function isAdm(){return!!sessionStorage.getItem("adm");}
 function isDn(){return!!localStorage.getItem("dn")&&!isAdm();}
@@ -125,86 +211,68 @@ function dt(){return new Date().toISOString().slice(0,10);}
 
 // ══════════ 学生问卷 ══════════
 async function srv(){
-  if(isDn()){document.getElementById("app").innerHTML=`<div class="card"><div class="ok-box"><div class="ok">✓</div><h2>问卷已提交</h2><p class="sec-desc">每台设备仅限提交一次，感谢参与</p></div></div>`;return;}
-  let data;try{const r=await sb.from("classes").select("*").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div>`;return;}
-  document.getElementById("app").innerHTML=`<h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
+  if(location.hash.slice(1)==="ok"){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>提交成功！</h2><p class="sec-desc">感谢你的宝贵评价，画室因你而更好</p></div></div></div>`;return;}
+  if(isDn()){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>问卷已提交</h2><p class="sec-desc">每台设备仅限提交一次，感谢参与</p></div></div></div>`;return;}
+  let data;try{const r=await sb.from("classes").select("*").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
+  document.getElementById("app").innerHTML=`<div class="container"><h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
     <div class="steps"><div class="step-d${S===1?' a':S>1?' d':''}">选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">确认提交</div></div>
-    <div id="sc"></div><div class="ft"><a href="#adm">管理后台</a></div>`;
+    <div id="sc"></div><div class="ft"><a href="#adm">管理后台</a></div></div>`;
   const el=document.getElementById("sc");if(S===1)st1(el,data);else if(S===2)st2(el);else if(S===3)st3(el);else st4(el);
 }
-function st1(el,cls){
-  let o='<option value="">请选择班级</option>';cls.forEach(c=>o+=`<option value="${c.id}">${x(c.name)}</option>`);
-  el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🏫</span>所属班级</div><div class="fun-line">选个班级，开启你的评价之旅吧</div>
-    <select id="cs">${o}</select><div class="err" id="ce">请选择班级</div><button class="btn btn-p mt24" onclick="nx1()">下一步 →</button></div>`;
-}
+function st1(el,cls){let o='<option value="">请选择班级</option>';cls.forEach(c=>o+=`<option value="${c.id}">${x(c.name)}</option>`);el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🏫</span>所属班级</div><div class="fun-line">选个班级，开启你的评价之旅吧</div><select id="cs">${o}</select><div class="err" id="ce">请选择班级</div><button class="btn btn-p mt24" onclick="nx1()">下一步 →</button></div>`;}
 function nx1(){const v=document.getElementById("cs").value;if(!v){document.getElementById("ce").classList.add("s");return;}C=v;S=2;go();}
-async function st2(el){
-  let data;try{const r=await sb.from("teachers").select("*").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}
-  if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p class="empty">该班级暂无教师数据，请联系管理员</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
+async function st2(el){let data;try{const r=await sb.from("teachers").select("*").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p class="empty" style="text-align:center;padding:24px;color:var(--txt3)">该班级暂无教师数据，请联系管理员</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
   let h=`<div class="card"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><div class="fun-line">给老师们打个分吧，他们会看到的！（大概）</div>`;
-  data.forEach(t=>{
-    h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;
-    DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});
-    h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;
-  });
-  h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;
-}
+  data.forEach(t=>{h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;});h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
 function pkT(id){T=T===id?null:id;document.querySelectorAll('.tc-card').forEach(c=>c.classList.toggle('sel',c.id==='tc-'+T));}
 function stS(tid,dim,score,btn){TS[tid+"_"+dim]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
 function nx2(){document.querySelectorAll('.cmt[data-tid]').forEach(ta=>{TC[ta.dataset.tid]=ta.value.trim();});if(!Object.values(TS).some(Boolean)){document.getElementById("te").classList.add("s");return;}S=3;go();}
-function st3(el){
-  el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🍽️</span>饭堂评价</div><div class="fun-line">食堂阿姨的手抖不抖？来评个分！</div>${sg("c","饭菜口味",CS,CC)}${sg("c","服务态度",CS,CC)}</div>
-  <div class="card"><div class="sec-tit"><span class="ico">🏠</span>宿舍评价</div><div class="fun-line">宿舍生活怎么样？宿管阿姨等你评价~</div>${sg("d","宿舍管理",DS,DC)}${sg("d","宿管服务",DS,DC)}</div>
-  <div class="card"><div class="sec-tit"><span class="ico">💬</span>个人建议</div><div class="fun-line">还有什么想说的？畅所欲言吧！</div><textarea class="big" id="gs" placeholder="请留下您的宝贵建议（选填）"></textarea></div>
-  <div class="row2 mb16"><button class="btn btn-o" onclick="S=2;go()">← 上一步</button><button class="btn btn-p" onclick="nx3()">下一步 →</button></div>`;
-}
+function st3(el){el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🍽️</span>饭堂评价</div><div class="fun-line">食堂阿姨的手抖不抖？来评个分！</div>${sg("c","饭菜口味",CS,CC)}${sg("c","服务态度",CS,CC)}</div><div class="card"><div class="sec-tit"><span class="ico">🏠</span>宿舍评价</div><div class="fun-line">宿舍生活怎么样？宿管阿姨等你评价~</div>${sg("d","宿舍管理",DS,DC)}${sg("d","宿管服务",DS,DC)}</div><div class="card"><div class="sec-tit"><span class="ico">💬</span>个人建议</div><div class="fun-line">还有什么想说的？畅所欲言吧！</div><textarea class="big" id="gs" placeholder="请留下您的宝贵建议（选填）"></textarea></div><div class="row2 mb16"><button class="btn btn-o" onclick="S=2;go()">← 上一步</button><button class="btn btn-p" onclick="nx3()">下一步 →</button></div>`;}
 function sg(pf,lb,ss,cc){const v=ss[lb];let h=`<div class="score-row"><span class="dim-label">${lb}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" onclick="stG('${pf}','${lb}',${i},this)">${i}</button>`;return h+`</div></div><textarea class="cmt" placeholder="${lb}方面有什么建议？（选填）" data-gp="${pf}_${lb}">${cc[lb]||""}</textarea>`;}
 function stG(pf,lb,score,btn){if(pf==="c")CS[lb]=score;else DS[lb]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
 function nx3(){document.querySelectorAll('.cmt[data-gp]').forEach(ta=>{const[p,k]=ta.dataset.gp.split("_");if(p==="c")CC[k]=ta.value.trim();else DC[k]=ta.value.trim();});S=4;go();}
-async function st4(el){
-  let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}
-  let s=`<p><b>班级：</b>${x(clsName)||"未知"}</p><p><b>教师已评：</b>${Object.values(TS).filter(Boolean).length} 项</p><p><b>饭堂已评：</b>${Object.values(CS).filter(Boolean).length} 项</p><p><b>宿舍已评：</b>${Object.values(DS).filter(Boolean).length} 项</p>`;
-  if(Object.values(TC).some(Boolean)||Object.values(CC).some(Boolean)||Object.values(DC).some(Boolean))s+=`<p><b>建议：</b>已填写</p>`;
-  el.innerHTML=`<div class="card tc"><div class="sec-tit" style="justify-content:center"><span class="ico">✅</span>确认提交</div><div class="fun-line">最后确认一下，提交后就不能反悔咯~</div>
-    <div style="text-align:left;margin:16px 0;font-size:14px;line-height:2.2">${s}</div>
-    <div class="row2 mb16"><button class="btn btn-o" onclick="S=3;go()">← 返回修改</button><button class="btn btn-p" id="sb" onclick="doSb()">确认提交</button></div><div class="err mt8" id="se"></div></div>`;
-}
-async function doSb(){
-  if(isDn())return;const btn=document.getElementById("sb");btn.disabled=true;btn.textContent="提交中...";
-  if(!C||isNaN(Number(C))){serr("班级信息异常，请返回重新选择",btn);return;}
-  const sid=crypto.randomUUID?crypto.randomUUID().slice(0,12):Math.random().toString(36).slice(2,14);
-  // submissions
-  try{const{error}=await sb.from("submissions").insert({id:sid,class_id:Number(C),teacher_id:T?Number(T):null});if(error){serr("提交失败："+error.message,btn);return;}}catch(e){serr("网络错误，请重试",btn);return;}
-  // 教师评分
-  const trs=[];for(let k in TS)if(TS[k]){const i=k.indexOf("_");trs.push({submission_id:sid,dimension:k.slice(i+1),score:TS[k]});}
-  if(trs.length){try{const{error}=await sb.from("teacher_ratings").insert(trs);if(error){serr("教师评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
-  // 饭堂
-  const crs=[];for(let k in CS)if(CS[k])crs.push({submission_id:sid,dimension:k,score:CS[k]});
-  if(crs.length){try{const{error}=await sb.from("canteen_ratings").insert(crs);if(error){serr("饭堂评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
-  // 宿舍
-  const drs=[];for(let k in DS)if(DS[k])drs.push({submission_id:sid,dimension:k,score:DS[k]});
-  if(drs.length){try{const{error}=await sb.from("dormitory_ratings").insert(drs);if(error){serr("宿舍评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
-  // 建议
-  let nm={};try{const r=await sb.from("teachers").select("id,name").eq("class_id",C);if(!r.error&&r.data)r.data.forEach(t=>nm[t.id]=t.name);}catch(e){}
-  const pts=[];
-  for(let[tid,cmt]of Object.entries(TC))if(cmt)pts.push(`[教师:${nm[tid]||tid}] ${cmt}`);
-  for(let[k,cmt]of Object.entries(CC))if(cmt)pts.push(`[饭堂:${k}] ${cmt}`);
-  for(let[k,cmt]of Object.entries(DC))if(cmt)pts.push(`[宿舍:${k}] ${cmt}`);
-  const gs=document.getElementById("gs")?.value?.trim()||"";if(gs)pts.push(`[综合] ${gs}`);
-  if(pts.length){try{const{error}=await sb.from("suggestions").insert({submission_id:sid,content:pts.join("\n")});if(error){serr("建议保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
-  localStorage.setItem("dn","1");S=1;C=null;T=null;TS={};TC={};CS={};CC={};DS={};DC={};location.hash="ok";
-}
+async function st4(el){let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}let s=`<p><b>班级：</b>${x(clsName)||"未知"}</p><p><b>教师已评：</b>${Object.values(TS).filter(Boolean).length} 项</p><p><b>饭堂已评：</b>${Object.values(CS).filter(Boolean).length} 项</p><p><b>宿舍已评：</b>${Object.values(DS).filter(Boolean).length} 项</p>`;if(Object.values(TC).some(Boolean)||Object.values(CC).some(Boolean)||Object.values(DC).some(Boolean))s+=`<p><b>建议：</b>已填写</p>`;el.innerHTML=`<div class="card tc"><div class="sec-tit" style="justify-content:center"><span class="ico">✅</span>确认提交</div><div class="fun-line">最后确认一下，提交后就不能反悔咯~</div><div style="text-align:left;margin:16px 0;font-size:14px;line-height:2.2">${s}</div><div class="row2 mb16"><button class="btn btn-o" onclick="S=3;go()">← 返回修改</button><button class="btn btn-p" id="sb" onclick="doSb()">确认提交</button></div><div class="err mt8" id="se"></div></div>`;}
+async function doSb(){if(isDn())return;const btn=document.getElementById("sb");btn.disabled=true;btn.textContent="提交中...";if(!C||isNaN(Number(C))){serr("班级信息异常，请返回重新选择",btn);return;}const sid=crypto.randomUUID?crypto.randomUUID().slice(0,12):Math.random().toString(36).slice(2,14);try{const{error}=await sb.from("submissions").insert({id:sid,class_id:Number(C),teacher_id:T?Number(T):null});if(error){serr("提交失败："+error.message,btn);return;}}catch(e){serr("网络错误，请重试",btn);return;}const trs=[];for(let k in TS)if(TS[k]){const i=k.indexOf("_");trs.push({submission_id:sid,dimension:k.slice(i+1),score:TS[k]});}if(trs.length){try{const{error}=await sb.from("teacher_ratings").insert(trs);if(error){serr("教师评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}const crs=[];for(let k in CS)if(CS[k])crs.push({submission_id:sid,dimension:k,score:CS[k]});if(crs.length){try{const{error}=await sb.from("canteen_ratings").insert(crs);if(error){serr("饭堂评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}const drs=[];for(let k in DS)if(DS[k])drs.push({submission_id:sid,dimension:k,score:DS[k]});if(drs.length){try{const{error}=await sb.from("dormitory_ratings").insert(drs);if(error){serr("宿舍评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}let nm={};try{const r=await sb.from("teachers").select("id,name").eq("class_id",C);if(!r.error&&r.data)r.data.forEach(t=>nm[t.id]=t.name);}catch(e){}const pts=[];for(let[tid,cmt]of Object.entries(TC))if(cmt)pts.push(`[教师:${nm[tid]||tid}] ${cmt}`);for(let[k,cmt]of Object.entries(CC))if(cmt)pts.push(`[饭堂:${k}] ${cmt}`);for(let[k,cmt]of Object.entries(DC))if(cmt)pts.push(`[宿舍:${k}] ${cmt}`);const gs=document.getElementById("gs")?.value?.trim()||"";if(gs)pts.push(`[综合] ${gs}`);if(pts.length){try{const{error}=await sb.from("suggestions").insert({submission_id:sid,content:pts.join("\n")});if(error){serr("建议保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}localStorage.setItem("dn","1");S=1;C=null;T=null;TS={};TC={};CS={};CC={};DS={};DC={};location.hash="ok";}
 function serr(msg,btn){const el=document.getElementById("se");if(el){el.textContent=msg;el.classList.add("s");}if(btn){btn.disabled=false;btn.textContent="确认提交";}}
-function done(){document.getElementById("app").innerHTML=`<div class="card"><div class="ok-box"><div class="ok">✓</div><h2>提交成功！</h2><p class="sec-desc">感谢你的宝贵评价，画室因你而更好</p></div></div>`;}
 
 // ══════════ 管理后台 ══════════
-function adm(){document.getElementById("app").innerHTML=`<div class="login-bx"><div class="hd"><h1>画室调查</h1><p class="sec-desc">管理后台</p></div><div class="card"><input id="au" placeholder="用户名" value="admin" autocomplete="username"><input id="ap" type="password" placeholder="密码" autocomplete="current-password"><div class="err mb8" id="ae">用户名或密码错误</div><button class="btn btn-p mt8" onclick="dLg()">登录</button></div></div>`;}
-function dLg(){const u=document.getElementById("au").value,p=document.getElementById("ap").value;if(u===ADM.u&&p===ADM.p){sessionStorage.setItem("adm","1");location.hash="dash";}else document.getElementById("ae").classList.add("s");}
+function admEnter(){if(location.hash.slice(1)==="adm"){renderLogin();return;}if(!isAdm()){location.hash="adm";return;}renderDashboard();}
+function renderLogin(){document.getElementById("app").innerHTML=`<div class="login-bx"><div class="hd"><h1>画室调查</h1><p class="sec-desc">管理后台</p></div><div class="card"><input id="au" placeholder="用户名" value="admin" autocomplete="username"><input id="ap" type="password" placeholder="密码" autocomplete="current-password"><div class="err mb8" id="ae">用户名或密码错误</div><button class="btn btn-p mt8" onclick="doLogin()">登录</button></div></div>`;}
+function doLogin(){const u=document.getElementById("au").value,p=document.getElementById("ap").value;if(u===ADM.u&&p===ADM.p){sessionStorage.setItem("adm","1");location.hash="dash";}else document.getElementById("ae").classList.add("s");}
 
-// 缓存
-let ca={};
-async function ld(force){
-  if(!force&&ca._ts&&Date.now()-ca._ts<20000&&ca.c)return;
+// ===== 后台主框架 =====
+let ca={},curPg="overview",tf="";
+
+function renderDashboard(){
+  document.getElementById("app").innerHTML=`<div class="wrap">
+    <aside class="sidebar">
+      <div class="side-logo"><h2><em>画室</em>调查</h2><p>管理后台</p></div>
+      <nav class="side-menu">
+        <div class="sm-item${curPg==='overview'?' on':''}" onclick="switchPg('overview')"><span class="dot"></span>数据概览</div>
+        <div class="sm-item${curPg==='teacher'?' on':''}" onclick="switchPg('teacher')"><span class="dot"></span>教师评分</div>
+        <div class="sm-item${curPg==='canteen'?' on':''}" onclick="switchPg('canteen')"><span class="dot"></span>饭堂评价</div>
+        <div class="sm-item${curPg==='dormitory'?' on':''}" onclick="switchPg('dormitory')"><span class="dot"></span>宿舍评价</div>
+        <div class="sm-item${curPg==='export'?' on':''}" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
+      </nav>
+      <div class="side-foot">v2.0 · 画室专用</div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-l">首页 <span class="sep">›</span> <span id="breadcrumb">数据概览</span></div>
+        <div class="topbar-r"><span class="time" id="liveTime"></span><span class="logout" onclick="doLogout()">退出登录</span></div>
+      </header>
+      <div class="content" id="dashBody"><div class="loading">加载中...</div></div>
+    </div>
+  </div>`;
+  updateTime();setInterval(updateTime,1000);
+  loadData(true).then(()=>switchPg(curPg));
+}
+function updateTime(){const t=document.getElementById("liveTime");if(t)t.textContent=new Date().toLocaleString("zh-CN",{hour12:false});}
+function doLogout(){sessionStorage.removeItem("adm");location.hash="adm";}
+
+// 数据加载
+async function loadData(force){
+  if(!force&&ca._ts&&Date.now()-ca._ts<30000&&ca.c)return;
   try{
     const rs=await Promise.allSettled([
       sb.from("classes").select("id,name").order("display_order"),
@@ -225,86 +293,105 @@ async function ld(force){
     ca._ts=Date.now();
   }catch(e){ca={_ts:0};}
 }
+
+// 建议解析
 function pS(cat,cid){
-  if(cat==="教师"&&cid){
-    // 按班级过滤：获取该班级所有提交ID
-    const sids=new Set((ca.s||[]).filter(s=>s.class_id==cid).map(s=>s.id));
-    return (ca.sg||[]).filter(s=>{
-      const lines=(s.content||"").split("\n");
-      return lines.some(l=>l.startsWith("[教师:"))&&sids.has(s.submission_id);
-    }).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith("[教师:"))};});
-  }
-  return (ca.sg||[]).filter(s=>{const lines=(s.content||"").split("\n");return lines.some(l=>l.startsWith(`[${cat}:`));}).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith(`[${cat}:`))};});
+  if(cat==="教师"&&cid){const sids=new Set((ca.s||[]).filter(s=>s.class_id==cid).map(s=>s.id));return(ca.sg||[]).filter(s=>{const lines=(s.content||"").split("\n");return lines.some(l=>l.startsWith("[教师:"))&&sids.has(s.submission_id);}).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith("[教师:"))};});}
+  return(ca.sg||[]).filter(s=>{const lines=(s.content||"").split("\n");return lines.some(l=>l.startsWith(`[${cat}:`));}).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith(`[${cat}:`))};});
 }
 function mS(sid){const s=(ca.s||[]).find(s=>s.id===sid);if(!s)return sid;const c=(ca.c||[]).find(c=>c.id===s.class_id);let m=c?c.name:"";if(s.teacher_id){const t=(ca.t||[]).find(t=>t.id===s.teacher_id);m+=" · "+(t?t.name:"");}return m+" · "+new Date(s.created_at).toLocaleString("zh-CN");}
+function avgD(cat,table,field,extraFilter){return async()=>{let data;try{const q=sb.from(table).select(field||"dimension,score");if(extraFilter)extraFilter(q);const r=await q;if(r.error)throw r.error;data=r.data;}catch(e){return"-";}return ag((data||[]).map(r=>r.score));};}
 
-async function dash(){
-  if(!isAdm()){location.hash="adm";return;}
-  document.getElementById("app").innerHTML=`<div class="nav"><div class="brand"><em>画室</em>调查 · 后台</div><a href="#" onclick="sessionStorage.removeItem('adm');location.hash='adm'">退出</a></div>
-    <div class="tbs"><button class="on" onclick="tb('ov')">概览</button><button onclick="tb('tc')">教师评分</button><button onclick="tb('ct')">饭堂评价</button><button onclick="tb('dm')">宿舍评价</button></div><div id="tbx"><div class="loading">加载中...</div></div>`;
-  await ld(true);tb("ov");
+// 页面切换
+async function switchPg(pg){
+  curPg=pg;
+  document.querySelectorAll(".sm-item").forEach(el=>el.classList.toggle("on",el.textContent.includes(pg==='overview'?'概览':pg==='teacher'?'教师':pg==='canteen'?'饭堂':pg==='dormitory'?'宿舍':'导出')));
+  const bc=document.getElementById("breadcrumb");if(bc)bc.textContent=pg==='overview'?'数据概览':pg==='teacher'?'教师评分':pg==='canteen'?'饭堂评价':pg==='dormitory'?'宿舍评价':'导出数据';
+  await loadData();
+  const el=document.getElementById("dashBody");if(!el)return;
+  if(pg==='overview')renderOverview(el);
+  else if(pg==='teacher')renderTeacher(el);
+  else if(pg==='canteen')renderRating(el,"canteen_ratings","饭堂","🍽️","饭堂");
+  else if(pg==='dormitory')renderRating(el,"dormitory_ratings","宿舍","🏠","宿舍");
+  else if(pg==='export')renderExport(el);
 }
-function tb(n){
-  document.querySelectorAll(".tbs button").forEach(b=>b.classList.remove("on"));event.target.classList.add("on");
-  const el=document.getElementById("tbx");
-  if(n==="ov")rov(el);else if(n==="tc")rtc(el);else if(n==="ct")rrt(el,"canteen_ratings","饭堂","🍽️","饭堂");else rrt(el,"dormitory_ratings","宿舍","🏠","宿舍");
-}
+function renderKPI(el,items){let h=`<div class="kpi-row">`;items.forEach(i=>h+=`<div class="kpi k-${i.c||'b'}"><div class="kpi-label">${i.l}</div><div class="kpi-n">${i.v}</div><div class="kpi-sub">${i.s||""}</div></div>`);el.innerHTML=h+`</div>`;}
 
-// 概览
-async function rov(el){
-  await ld();
-  if(!ca.r||!ca.r.length){el.innerHTML=`<div class="card"><div class="empty">暂无评分数据，等待学生提交后自动显示</div></div>`;return;}
-  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d).map(r=>r.score);dr+=`<tr><td>${d}</td><td><b>${ag(sc)}</b></td><td>${sc.length}</td></tr>`;});
-  el.innerHTML=`<div class="kpi-row"><div class="kpi b"><div class="n">${ca.tot}</div><div class="l">总提交</div></div><div class="kpi g"><div class="n">${ca.c.length}</div><div class="l">班级数</div></div><div class="kpi o"><div class="n">${ca.t.length}</div><div class="l">教师数</div></div><div class="kpi p"><div class="n">${ca.scnt}</div><div class="l">建议数</div></div></div>
-  <div class="card"><div class="pnl-hd"><div class="sec-tit"><span class="ico">📊</span>各维度平均分</div><button class="btn-x" onclick="eAll()">导出全部</button></div>
-    <div class="tbl-wrap"><table><tr><th>维度</th><th>均分</th><th>评价人次</th></tr>${dr}</table></div>
-    ${sbk("综合","💬 综合建议")}</div>`;
-}
+// ===== 概览 =====
+function renderOverview(el){
+  const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length,sc=ca.scnt;
+  let tAvg="-",cAvg="-",dAvg="-";
+  if(ca.r&&ca.r.length)tAvg=ag(ca.r.map(r=>r.score));
+  el.innerHTML=`<div class="kpi-row">
+    <div class="kpi k-b"><div class="kpi-label">总提交数</div><div class="kpi-n">${tc}</div><div class="kpi-sub">累计提交问卷</div></div>
+    <div class="kpi k-g"><div class="kpi-label">班级数</div><div class="kpi-n">${cc}</div><div class="kpi-sub">覆盖班级</div></div>
+    <div class="kpi k-o"><div class="kpi-label">教师数</div><div class="kpi-n">${tc2}</div><div class="kpi-sub">在职教师</div></div>
+    <div class="kpi k-p"><div class="kpi-label">建议数</div><div class="kpi-n">${sc}</div><div class="kpi-sub">含综合建议</div></div>
+    <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'人次':''}</div></div>
+  </div>`;
+  // 维度均分表
+  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d).map(r=>r.score);dr+=`<tr><td>${d}</td><td class="ta-c"><b>${ag(sc)}</b></td><td class="ta-c">${sc.length}</td></tr>`;});
+  el.innerHTML+=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📊 各维度平均分</span><button class="btn-pm sm" onclick="doExportAll()">导出全部</button></div>
+    <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>评价维度</th><th class="ta-c">均分</th><th class="ta-c">评价人次</th></tr></thead><tbody>${dr}</tbody></table></div></div>
+    <div class="sug-lst"><h4>💬 综合建议</h4>${renderSugs("综合")}</div></div>`;
 
-// 教师评分
-let tf="";
-async function rtc(el){
-  await ld(true);
+  // 异步加载饭堂/宿舍均分
+  loadRatingAvg("canteen_ratings","饭堂").then(v=>{const e=document.getElementById("kpi-canteen");if(e)e.textContent=v;});
+  loadRatingAvg("dormitory_ratings","宿舍").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
+}
+async function loadRatingAvg(table,label){try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
+
+// ===== 教师评分 =====
+function renderTeacher(el){
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
   let opt='<option value="">全部班级</option>';ca.c.forEach(c=>opt+=`<option value="${c.id}" ${tf==c.id?'selected':''}>${x(c.name)}</option>`);
   const ftd=tf?(ca.t||[]).filter(t=>t.class_id==tf):(ca.t||[]);
   const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});
-  let h=`<div class="card"><div class="pnl-hd"><div class="sec-tit"><span class="ico">👨‍🏫</span>教师评分详情</div><button class="btn-x" onclick="eTc()">导出教师数据</button></div>
-    <select class="sel-sm mb16" onchange="ftc(this.value)">${opt}</select>
-    <div class="tbl-wrap"><table><tr><th>班级</th><th>教师</th><th>人次</th>`;
-  DM.forEach(d=>h+=`<th>${d}</th>`);h+='<th>均分</th></tr>';
-  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td>${x(t.name)}</td><td>${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d&&si.includes(r.submission_id)).map(r=>r.score);h+=`<td>${ag(sc)}</td>`;al.push(...sc);});h+=`<td><b>${ag(al)}</b></td></tr>`;}
-  h+=`</table></div>`;
-  // 建议：选班级时按班级过滤，未选时显示全部
-  h+=tf?sbk("教师","📝 学生对教师的建议",tf):sbk("教师","📝 学生对教师的建议（全部班级）");
-  h+=`</div>`;el.innerHTML=h;
+  let h=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">👨‍🏫 教师评分详情</span><button class="btn-pm sm" onclick="doExportTeacher()">导出教师数据</button></div>
+    <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select></div>
+    <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
+  DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody>';
+  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d&&si.includes(r.submission_id)).map(r=>r.score);h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
+  h+=`</tbody></table></div></div>`;
+  h+=`<div class="sug-lst"><h4>📝 学生对教师的建议${tf?'（'+cm[tf]+'）':'（全部班级）'}</h4>${renderSugs("教师",tf)}</div></div>`;
+  el.innerHTML=h;
 }
-async function ftc(v){tf=v;await ld(true);rtc(document.getElementById("tbx"));}
+function filterClass(v){tf=v;renderTeacher(document.getElementById("dashBody"));}
 
-// 饭堂/宿舍
-async function rrt(el,table,title,ico,cat){
-  await ld(true);
-  let data;try{const r=await sb.from(table).select("dimension,score");if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:tb('${cat==='饭堂'?'ct':'dm'}')">重试</a></div></div>`;return;}
+// ===== 饭堂/宿舍评价 =====
+async function renderRating(el,table,title,ico,cat){
+  let data;try{const r=await sb.from(table).select("dimension,score");if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="panel"><div class="panel-body"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:switchPg('${cat==='饭堂'?'canteen':'dormitory'}')">重试</a></div></div></div>`;return;}
   const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
-  let rs="";for(let k in g)rs+=`<tr><td>${k}</td><td><b>${ag(g[k])}</b></td><td>${g[k].length}</td></tr>`;
-  el.innerHTML=`<div class="card"><div class="pnl-hd"><div class="sec-tit"><span class="ico">${ico}</span>${title}</div><button class="btn-x" onclick="eRt('${table}','${title}','${cat}')">导出${title}</button></div>
-    <div class="tbl-wrap"><table><tr><th>维度</th><th>均分</th><th>评价人次</th></tr>${rs}</table></div>
-    ${sbk(cat,`📝 ${title}相关建议`)}</div>`;
+  let rs="";for(let k in g)rs+=`<tr><td>${k}</td><td class="ta-c"><b>${ag(g[k])}</b></td><td class="ta-c">${g[k].length}</td></tr>`;
+  el.innerHTML=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">${ico} ${title}评价</span><button class="btn-pm sm" onclick="doExportRating('${table}','${title}','${cat}')">导出${title}</button></div>
+    <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>评价维度</th><th class="ta-c">均分</th><th class="ta-c">评价人次</th></tr></thead><tbody>${rs}</tbody></table></div></div>
+    <div class="sug-lst"><h4>📝 ${title}相关建议</h4>${renderSugs(cat)}</div></div>`;
 }
 
-// 建议块（cid 仅用于"教师"分类按班级过滤）
-function sbk(cat,title,cid){
+// ===== 导出页 =====
+function renderExport(el){
+  el.innerHTML=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📥 数据导出</span></div>
+    <div class="panel-body"><p class="sec-desc">选择需要导出的数据模块，导出为 Excel 文件。</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px">
+      <div class="kpi k-b" style="cursor:pointer" onclick="doExportAll()"><div class="kpi-label">📊 全部数据</div><div class="kpi-n" style="font-size:18px;font-weight:500">一键导出</div><div class="kpi-sub">含教师、饭堂、宿舍、建议</div></div>
+      <div class="kpi k-g" style="cursor:pointer" onclick="doExportTeacher()"><div class="kpi-label">👨‍🏫 教师评价</div><div class="kpi-n" style="font-size:18px;font-weight:500">导出</div><div class="kpi-sub">含各维度评分与建议</div></div>
+      <div class="kpi k-o" style="cursor:pointer" onclick="doExportRating('canteen_ratings','饭堂','饭堂')"><div class="kpi-label">🍽️ 饭堂评价</div><div class="kpi-n" style="font-size:18px;font-weight:500">导出</div><div class="kpi-sub">含饭菜口味与服务态度</div></div>
+      <div class="kpi k-p" style="cursor:pointer" onclick="doExportRating('dormitory_ratings','宿舍','宿舍')"><div class="kpi-label">🏠 宿舍评价</div><div class="kpi-n" style="font-size:18px;font-weight:500">导出</div><div class="kpi-sub">含宿舍管理与宿管服务</div></div>
+    </div></div></div>`;
+}
+
+// ===== 建议渲染 =====
+function renderSugs(cat,cid){
   const sugs=pS(cat,cid);
-  if(!sugs.length)return `<div class="sug-lst"><h4>${title}</h4><div class="empty">暂无</div></div>`;
-  let h=`<div class="sug-lst"><h4>${title}（${sugs.length}条）</h4>`;
-  sugs.forEach(s=>h+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${x(s.lines.join("\n"))}</div></div>`);
-  return h+`</div>`;
+  if(!sugs.length)return`<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>`;
+  let h="";sugs.forEach(s=>h+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${x(s.lines.join("\n"))}</div></div>`);
+  return h;
 }
 
-// 导出
-async function eTc(){await ld();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects,t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d&&si.includes(r.submission_id)).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
-async function eRt(table,title,cat){let data;try{const r=await sb.from(table).select("dimension,score");if(!r.error)data=r.data;}catch(e){}const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});const rs=[["维度","均分","人次"]];for(let k in g)rs.push([k,ag(g[k]),g[k].length]);rs.push([],["— 相关建议 —"]);pS(cat).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),title);XLSX.writeFile(wb,`画室_${title}_${dt()}.xlsx`);}
-async function eAll(){await ld();const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects,t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d&&si.includes(r.submission_id)).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");for(let[tbl,ttl]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){let d;try{const r=await sb.from(tbl).select("dimension,score");if(!r.error)d=r.data;}catch(e){}const g={};(d||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
+// ===== 导出函数 =====
+async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d&&si.includes(r.submission_id)).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");for(let[tbl,ttl]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){let d;try{const r=await sb.from(tbl).select("dimension,score");if(!r.error)d=r.data;}catch(e){}const g={};(d||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
+async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>r.dimension===d&&si.includes(r.submission_id)).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
+async function doExportRating(table,title,cat){let data;try{const r=await sb.from(table).select("dimension,score");if(!r.error)data=r.data;}catch(e){}const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});const rs=[["维度","均分","人次"]];for(let k in g)rs.push([k,ag(g[k]),g[k].length]);rs.push([],["— 相关建议 —"]);pS(cat).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),title);XLSX.writeFile(wb,`画室_${title}_${dt()}.xlsx`);}
 
 window.addEventListener("hashchange",go);go();
 </script>
