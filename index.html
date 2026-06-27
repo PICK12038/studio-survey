@@ -267,7 +267,7 @@ async function doSb(){if(isDn())return;const btn=document.getElementById("sb");b
 function serr(msg,btn){const el=document.getElementById("se");if(el){el.textContent=msg;el.classList.add("s");}if(btn){btn.disabled=false;btn.textContent="确认提交";}}
 
 // ══════════ 管理后台 ══════════
-function admEnter(){if(location.hash.slice(1)==="adm"){renderLogin();return;}if(!isAdm()){location.hash="adm";return;}renderDashboard();}
+function admEnter(){if(!isAdm()){renderLogin();return;}renderDashboard();}
 function renderLogin(){document.getElementById("app").innerHTML=`<div class="login-bx"><div class="hd"><h1>画室调查</h1><p class="sec-desc">管理后台</p></div><div class="card"><input id="au" placeholder="用户名" value="admin" autocomplete="username"><input id="ap" type="password" placeholder="密码" autocomplete="current-password"><div class="err mb8" id="ae">用户名或密码错误</div><button class="btn btn-p mt8" onclick="doLogin()">登录</button></div></div>`;}
 function doLogin(){const u=document.getElementById("au").value,p=document.getElementById("ap").value;if(u===ADM.u&&p===ADM.p){sessionStorage.setItem("adm","1");location.hash="dash";}else document.getElementById("ae").classList.add("s");}
 
