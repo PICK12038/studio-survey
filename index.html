@@ -30,8 +30,10 @@ select:focus{border-color:#2563eb;outline:none}
 .teacher-card .tc-name{font-weight:600;font-size:15px}
 .teacher-card .tc-subjects{font-size:11px;color:#888}
 .badge{font-size:10px;padding:2px 7px;border-radius:10px;background:#fef3c7;color:#b45309;flex-shrink:0}
-textarea{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit}
-textarea:focus{border-color:#2563eb;outline:none}
+.teacher-comment{width:100%;padding:10px;border:1.5px solid #eee;border-radius:8px;font-size:13px;resize:none;min-height:50px;font-family:inherit;margin-top:8px;background:#fafafa}
+.teacher-comment:focus{border-color:#2563eb;outline:none;background:#fff}
+textarea:not(.teacher-comment){width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit}
+textarea:not(.teacher-comment):focus{border-color:#2563eb;outline:none}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
 .btn:active{transform:scale(.98)}
 .btn-primary{background:#2563eb;color:#fff;width:100%}
@@ -46,11 +48,7 @@ textarea:focus{border-color:#2563eb;outline:none}
 .step.done{background:#dcfce7;color:#16a34a}
 .success-icon{font-size:48px;text-align:center;margin:16px 0;color:#16a34a}
 .text-center{text-align:center}
-.mt-8{margin-top:8px}
-.mt-16{margin-top:16px}
-.mt-24{margin-top:24px}
-.mb-8{margin-bottom:8px}
-.mb-16{margin-bottom:16px}
+.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mb-8{margin-bottom:8px}.mb-16{margin-bottom:16px}
 .error{color:#dc2626;font-size:12px;margin-top:4px}
 .login-box{max-width:360px;margin:60px auto}
 .login-box input{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:12px}
@@ -73,6 +71,8 @@ th{background:#f8fafc;font-weight:600;color:#555;font-size:12px;position:sticky;
 .admin-link:hover{color:#2563eb}
 .btn-row{display:flex;gap:10px}
 .btn-row .btn{flex:1}
+.select-sm{width:auto;min-width:140px;padding:8px 32px 8px 10px;font-size:13px;background-position:right 8px center;display:inline-block}
+.info-banner{background:#fef3c7;color:#92400e;padding:12px 16px;border-radius:8px;font-size:13px;text-align:center;margin-bottom:16px}
 @media(min-width:641px){.container{padding:24px 24px 48px}.card{padding:24px}h1{font-size:24px}.subtitle{font-size:14px;margin-bottom:24px}.step{font-size:13px}.score-btn{min-width:36px;height:36px;font-size:14px}.teacher-card{padding:18px}.score-row{padding:12px 0}.score-row .dim-label{font-size:15px}.stat-card{padding:20px}.stat-card .stat-num{font-size:32px}.stat-card .stat-label{font-size:13px}}
 @media(max-width:640px){.score-btn{min-width:28px;height:28px;font-size:12px;border-radius:5px}.score-row .dim-label{font-size:13px}.score-btns{gap:2px}.teacher-card{padding:12px}.teacher-card .tc-name{font-size:14px}}
 @media(max-width:400px){.container{padding:12px 10px 32px}.card{padding:14px 12px;border-radius:10px}h1{font-size:18px}.score-btn{min-width:26px;height:26px;font-size:11px;border-radius:4px}.score-btns{gap:1px}.step{font-size:10px;padding:6px 2px}.teacher-card .tc-name{font-size:13px}.stats-grid{grid-template-columns:1fr}.score-row{gap:4px;padding:8px 0}.score-row .dim-label{font-size:12px}select{font-size:14px;padding:10px}}
@@ -98,9 +98,18 @@ function route(){
   else renderSurvey();
 }
 
-let step=1,selectedClass=null,selectedTeacher=null,teacherScores={},canteenScores={},dormScores={};
+let step=1,selectedClass=null,selectedTeacher=null,teacherScores={},teacherComments={},canteenScores={},dormScores={};
 
+// ── 每设备限制一次（管理员豁免） ──
+function isAdmin(){return !!sessionStorage.getItem("admin_auth");}
+function alreadySubmitted(){return !!localStorage.getItem("survey_submitted")&&!isAdmin();}
+
+// ── 问卷 ──
 async function renderSurvey(){
+  if(alreadySubmitted()){
+    document.getElementById("app").innerHTML=`<div class="card text-center"><div class="success-icon">&#10003;</div><h1>您已提交过问卷</h1><p class="subtitle">每台设备仅限提交一次，感谢您的参与！</p></div>`;
+    return;
+  }
   const{data:classes}=await sb.from("classes").select("*").order("display_order");
   document.getElementById("app").innerHTML=`<h1>画室满意度调查</h1><p class="subtitle">请对您的学习体验进行评价（1-10分）</p>
     <div class="step-indicator">
@@ -147,6 +156,8 @@ async function renderStep2(el){
       for(let i=1;i<=10;i++)html+=`<button class="score-btn ${v==i?'active':''}" data-score="${i}" onclick="setTeacherScore(${t.id},'${d}',${i},this)">${i}</button>`;
       html+=`</div></div>`;
     });
+    const c=teacherComments[t.id]||"";
+    html+=`<textarea class="teacher-comment" placeholder="对该教师的建议（选填）" data-tid="${t.id}">${c}</textarea>`;
     html+=`</div>`;
   });
   html+=`<p class="error hidden mt-16" id="teacher-err">请至少为一位教师评分</p>
@@ -166,6 +177,11 @@ function setTeacherScore(tid,dim,score,btn){
 }
 
 function nextStep2(){
+  // 先收集所有教师评语
+  document.querySelectorAll('.teacher-comment').forEach(ta=>{
+    const tid=ta.dataset.tid;
+    teacherComments[tid]=ta.value.trim();
+  });
   if(!Object.values(teacherScores).some(Boolean)){document.getElementById("teacher-err").classList.remove("hidden");return;}
   step=3;route();
 }
@@ -198,37 +214,49 @@ async function renderStep4(el){
   let s=`<p><strong>班级：</strong>${cls.name}</p>`;
   if(tch)s+=`<p><strong>主评教师：</strong>${tch.name}</p>`;
   s+=`<p><strong>已评分：</strong>${Object.values(teacherScores).filter(Boolean).length} 项</p>`;
+  const hasComments=Object.values(teacherComments).some(Boolean);
+  if(hasComments)s+=`<p><strong>教师建议：</strong>已填写</p>`;
   el.innerHTML=`<div class="card text-center"><h2>确认提交</h2><div style="text-align:left;margin:16px 0;font-size:14px;line-height:2">${s}</div>
     <div class="btn-row mb-16"><button class="btn btn-outline" onclick="step=3;route()">返回修改</button><button class="btn btn-primary" id="submit-btn" onclick="doSubmit()">确认提交</button></div>
     <p class="error hidden mt-8" id="submit-err"></p></div>`;
 }
 
 async function doSubmit(){
+  if(alreadySubmitted()){showErr("您已提交过问卷",null);return;}
   const btn=document.getElementById("submit-btn");btn.disabled=true;btn.textContent="提交中...";
   const sid=crypto.randomUUID?crypto.randomUUID().slice(0,12):Math.random().toString(36).slice(2,14);
   const{error:e1}=await sb.from("submissions").insert({id:sid,class_id:Number(selectedClass),teacher_id:selectedTeacher?Number(selectedTeacher):null});
   if(e1){showErr(e1.message,btn);return;}
-  const trs=[];for(let k in teacherScores){if(!teacherScores[k])continue;const[tid]=k.split("_");trs.push({submission_id:sid,dimension:k.slice(k.indexOf("_")+1),score:teacherScores[k]});}
+  const trs=[];for(let k in teacherScores){if(!teacherScores[k])continue;const idx=k.indexOf("_");trs.push({submission_id:sid,dimension:k.slice(idx+1),score:teacherScores[k]});}
   if(trs.length){const{error:e2}=await sb.from("teacher_ratings").insert(trs);if(e2){showErr(e2.message,btn);return;}}
   const crs=[];for(let k in canteenScores)if(canteenScores[k])crs.push({submission_id:sid,dimension:k,score:canteenScores[k]});
   if(crs.length){const{error}=await sb.from("canteen_ratings").insert(crs);if(error){showErr(error.message,btn);return;}}
   const drs=[];for(let k in dormScores)if(dormScores[k])drs.push({submission_id:sid,dimension:k,score:dormScores[k]});
   if(drs.length){const{error}=await sb.from("dormitory_ratings").insert(drs);if(error){showErr(error.message,btn);return;}}
-  const sug=document.getElementById("suggestion")?.value?.trim();
-  if(sug){const{error}=await sb.from("suggestions").insert({submission_id:sid,content:sug});if(error){showErr(error.message,btn);return;}}
-  step=1;selectedClass=null;selectedTeacher=null;teacherScores={};canteenScores={};dormScores={};
+  // 教师评语 + 个人建议 → suggestions 表
+  const sugEl=document.getElementById("suggestion");
+  const sug=sugEl?.value?.trim()||"";
+  // 收集教师评语
+  let tComments="";
+  if(Object.values(teacherComments).some(Boolean)){
+    const{data:teachers}=await sb.from("teachers").select("id,name").eq("class_id",selectedClass);
+    const nameMap={};(teachers||[]).forEach(t=>nameMap[t.id]=t.name);
+    tComments=Object.entries(teacherComments).filter(([_,v])=>v).map(([tid,cmt])=>`【${nameMap[tid]||tid}】${cmt}`).join("\n");
+  }
+  const content=[tComments,sug].filter(Boolean).join("\n\n");
+  if(content){const{error}=await sb.from("suggestions").insert({submission_id:sid,content});if(error){showErr(error.message,btn);return;}}
+  localStorage.setItem("survey_submitted","1");
+  step=1;selectedClass=null;selectedTeacher=null;teacherScores={};teacherComments={};canteenScores={};dormScores={};
   location.hash="done";
 }
 
-function showErr(msg,btn){
-  const el=document.getElementById("submit-err");if(el){el.textContent="提交失败："+msg;el.classList.remove("hidden");}
-  if(btn){btn.disabled=false;btn.textContent="确认提交";}
-}
+function showErr(msg,btn){const el=document.getElementById("submit-err");if(el){el.textContent=msg;el.classList.remove("hidden");}if(btn){btn.disabled=false;btn.textContent="确认提交";}}
 
 function renderDone(){
   document.getElementById("app").innerHTML=`<div class="card text-center"><div class="success-icon">&#10003;</div><h1>提交成功</h1><p class="subtitle">感谢您的宝贵评价！</p><button class="btn btn-primary mt-24" onclick="location.hash='survey'">再填一份</button></div>`;
 }
 
+// ── 管理后台 ──
 function renderAdmin(){
   document.getElementById("app").innerHTML=`<div class="login-box card"><h2 class="text-center mb-16">管理员登录</h2>
     <input id="adm-user" placeholder="用户名" value="admin" autocomplete="username"><input id="adm-pass" type="password" placeholder="密码" autocomplete="current-password">
@@ -242,18 +270,18 @@ function adminLogin(){
 }
 
 async function renderDashboard(){
-  if(!sessionStorage.getItem("admin_auth")){location.hash="admin";return;}
+  if(!isAdmin()){location.hash="admin";return;}
   document.getElementById("app").innerHTML=`<div class="nav"><h2>管理后台</h2><a href="#" onclick="sessionStorage.removeItem('admin_auth');location.hash='admin'">退出</a></div>
     <div class="tabs"><button class="tab active" onclick="switchTab('overview')">概览</button><button class="tab" onclick="switchTab('teachers')">教师评分</button><button class="tab" onclick="switchTab('canteen')">饭堂</button><button class="tab" onclick="switchTab('dorm')">宿舍</button><button class="tab" onclick="switchTab('suggestions')">建议</button></div><div id="tab-content"></div>`;
   switchTab("overview");
 }
 
-// ── 客户端聚合工具函数 ──
 function calcAvg(scores){return scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):"-";}
 
+let currentTab=null;
 async function switchTab(name){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  event.target.classList.add("active");
+  event.target.classList.add("active");currentTab=name;
   const el=document.getElementById("tab-content");
   if(name==="overview")await renderOverview(el);
   else if(name==="teachers")await renderTeacherChart(el);
@@ -285,16 +313,24 @@ async function renderOverview(el){
   <button class="btn btn-primary mt-16" onclick="exportExcel()">导出 Excel</button>`;
 }
 
+let selectedClassFilter="";
 async function renderTeacherChart(el){
-  const{data:teachers}=await sb.from("teachers").select("id,name,class_id").order("class_id");
   const{data:classes}=await sb.from("classes").select("id,name").order("display_order");
   const classMap=Object.fromEntries(classes.map(c=>[c.id,c.name]));
+  let opts='<option value="">全部班级</option>';
+  classes.forEach(c=>opts+=`<option value="${c.id}" ${selectedClassFilter==c.id?'selected':''}>${c.name}</option>`);
+  const{data:teachers}=await sb.from("teachers").select("id,name,class_id").order("class_id");
+  if(selectedClassFilter)teachers.forEach((t,i)=>{if(t.class_id!=selectedClassFilter)teachers.splice(i,1);});
+  else while(teachers.some(t=>t===undefined))teachers.splice(teachers.indexOf(undefined),1);
+  const filtered=selectedClassFilter?teachers.filter(t=>t.class_id==selectedClassFilter):teachers;
   const{data:allRatings}=await sb.from("teacher_ratings").select("submission_id,dimension,score");
   const{data:allSubs}=await sb.from("submissions").select("id,teacher_id");
   const subMap={};(allSubs||[]).forEach(s=>{if(!subMap[s.teacher_id])subMap[s.teacher_id]=[];subMap[s.teacher_id].push(s.id);});
-  let html='<div class="card"><h2 class="mb-16">教师评分详情</h2><div class="table-wrap"><table><tr><th>班级</th><th>教师</th><th>人次</th>';
+  let html=`<div class="card"><h2 class="mb-16">教师评分详情</h2>
+    <select class="select-sm mb-16" onchange="filterTeachers(this.value)">${opts}</select>
+    <div class="table-wrap"><table><tr><th>班级</th><th>教师</th><th>人次</th>`;
   DIMS.forEach(d=>html+=`<th>${d}</th>`);html+='<th>均分</th></tr>';
-  for(let t of(teachers||[])){
+  for(let t of(filtered)){
     const subIds=subMap[t.id]||[];
     html+=`<tr><td>${classMap[t.class_id]||""}</td><td>${t.name}</td><td>${subIds.length}</td>`;
     let allScores=[];
@@ -305,6 +341,11 @@ async function renderTeacherChart(el){
     html+=`<td>${calcAvg(allScores)}</td></tr>`;
   }
   html+='</table></div></div>';el.innerHTML=html;
+}
+
+async function filterTeachers(classId){
+  selectedClassFilter=classId;
+  await renderTeacherChart(document.getElementById("tab-content"));
 }
 
 async function renderRatingTable(el,table,title){
@@ -322,7 +363,7 @@ async function renderSuggestions(el){
   else for(let s of data){
     const{data:sub}=await sb.from("submissions").select("class_id,teacher_id,created_at").eq("id",s.submission_id).single();
     let meta="";if(sub){const{data:cls}=await sb.from("classes").select("name").eq("id",sub.class_id).single();meta+=cls?cls.name:"";if(sub.teacher_id){const{data:tch}=await sb.from("teachers").select("name").eq("id",sub.teacher_id).single();meta+=" · "+(tch?tch.name:"未知教师");}meta+=" · "+new Date(sub.created_at).toLocaleString("zh-CN");}
-    html+=`<div class="suggestion-item"><div class="meta">${meta}</div><div>${s.content}</div></div>`;
+    html+=`<div class="suggestion-item"><div class="meta">${meta}</div><div style="white-space:pre-wrap">${s.content}</div></div>`;
   }
   html+='</div>';el.innerHTML=html;
 }
