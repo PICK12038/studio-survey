@@ -14,7 +14,7 @@ html{font-size:16px;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:var(--txt);line-height:1.6;-webkit-font-smoothing:antialiased}
 
 /* ====== 学生端 ====== */
-.container{max-width:780px;margin:0 auto;padding:24px 16px 48px}
+.container{max-width:780px;margin:0 auto;padding:16px 12px 80px;padding-bottom:max(80px, calc(env(safe-area-inset-bottom) + 80px))}
 .card{background:var(--card);border-radius:var(--rds);padding:24px 20px;margin-bottom:16px;box-shadow:var(--sh);border:1px solid var(--brd)}
 .sec-tit{font-size:16px;font-weight:600;color:var(--txt);margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .sec-tit .ico{font-size:18px}
@@ -26,7 +26,7 @@ select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--bl
 .score-row:last-child{border-bottom:none}
 .dim-label{font-size:14px;color:var(--txt);flex:1;min-width:0;word-break:break-all}
 .score-btns{display:flex;gap:4px;flex-shrink:0}
-.sbtn{min-width:34px;height:34px;padding:0;border:1px solid var(--brd);border-radius:7px;background:var(--card);font-size:13px;cursor:pointer;transition:all .12s;color:var(--txt2);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;font-weight:500}
+.sbtn{min-width:40px;height:40px;padding:0;border:1px solid var(--brd);border-radius:7px;background:var(--card);font-size:14px;cursor:pointer;transition:all .12s;color:var(--txt2);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;font-weight:500}
 .sbtn:active{transform:scale(.93)}
 .sbtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 .sbtn.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600}
@@ -66,6 +66,7 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .nav a{color:var(--txt3);text-decoration:none;font-size:12px;transition:color .15s}
 .nav a:hover{color:var(--blue)}
 .steps{display:flex;gap:6px;margin-bottom:24px}
+.steps.sticky{position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0 12px;margin:-8px 0 16px}
 .step-d{flex:1;text-align:center;padding:9px 4px;border-radius:8px;background:#e8eaed;font-size:12px;color:var(--txt3);transition:all .2s}
 .step-d.a{background:var(--blue);color:#fff;font-weight:600}
 .step-d.d{background:var(--green);color:#fff}
@@ -183,12 +184,32 @@ tr:hover td{background:var(--blue-lt)}
   .kpi-row{grid-template-columns:1fr}
 }
 @media(min-width:641px){
-  .container{padding:28px 28px 56px}.card{padding:28px 24px}.sec-tit{font-size:18px}
-  .sbtn{min-width:38px;height:38px;font-size:14px}.tc-card{padding:20px}.score-row{padding:13px 0}
+  .container{padding:28px 28px 56px;padding-bottom:56px}
+  .card{padding:28px 24px}.sec-tit{font-size:18px}
+  .sbtn{min-width:44px;height:44px;font-size:15px}.tc-card{padding:20px}.score-row{padding:13px 0}
+  .steps.sticky{position:static;background:transparent;padding:0;margin:0 0 24px}
 }
 @media(max-width:640px){
-  .sbtn{min-width:30px;height:30px;font-size:12px;border-radius:6px}.dim-label{font-size:13px}
-  .score-btns{gap:3px}.tc-card{padding:14px}.tname{font-size:14px}
+  .card{padding:16px 14px}
+  .sec-tit{font-size:15px}
+  .score-row{flex-wrap:wrap;padding:10px 0;gap:6px}
+  .dim-label{width:100%;font-size:14px;font-weight:500;margin-bottom:2px}
+  .score-btns{width:100%;justify-content:space-between;gap:3px;flex-wrap:wrap}
+  .sbtn{flex:1;min-width:36px;max-width:52px;height:42px;font-size:13px;border-radius:6px}
+  .tc-card{padding:12px}.tname{font-size:14px}
+  .nav{padding:4px 0 14px}.nav .brand{font-size:16px}
+  .steps{margin-bottom:16px}.step-d{padding:7px 2px;font-size:11px}
+  .login-bx{max-width:100%;margin:30px 8px}
+  .ok-box{padding:24px 12px}
+  .btn{padding:13px 20px;font-size:15px;width:100%}
+  .row2{flex-direction:column;gap:8px}
+}
+@media(max-width:360px){
+  .sbtn{min-width:28px;height:36px;font-size:12px;max-width:44px}
+  .score-btns{gap:2px}
+  .card{padding:14px 10px}
+  .dim-label{font-size:13px}
+  .container{padding:12px 8px 80px;padding-bottom:max(80px, calc(env(safe-area-inset-bottom) + 80px))}
 }
 </style>
 </head>
@@ -215,7 +236,7 @@ async function srv(){
   if(isDn()){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>问卷已提交</h2><p class="sec-desc">每台设备仅限提交一次，感谢参与</p></div></div></div>`;return;}
   let data;try{const r=await sb.from("classes").select("*").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
   document.getElementById("app").innerHTML=`<div class="container"><h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
-    <div class="steps"><div class="step-d${S===1?' a':S>1?' d':''}">选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">确认提交</div></div>
+    <div class="steps sticky"><div class="step-d${S===1?' a':S>1?' d':''}">①选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">②评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">③饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">④确认提交</div></div>
     <div id="sc"></div><div class="ft"><a href="#adm">管理后台</a></div></div>`;
   const el=document.getElementById("sc");if(S===1)st1(el,data);else if(S===2)st2(el);else if(S===3)st3(el);else st4(el);
 }
@@ -223,12 +244,12 @@ function st1(el,cls){let o='<option value="">请选择班级</option>';cls.forEa
 function nx1(){const v=document.getElementById("cs").value;if(!v){document.getElementById("ce").classList.add("s");return;}C=v;S=2;go();}
 async function st2(el){let data;try{const r=await sb.from("teachers").select("*").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p class="empty" style="text-align:center;padding:24px;color:var(--txt3)">该班级暂无教师数据，请联系管理员</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
   let h=`<div class="card"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><div class="fun-line">给老师们打个分吧，他们会看到的！（大概）</div>`;
-  data.forEach(t=>{h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;});h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
+  data.forEach(t=>{h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;});h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
 function pkT(id){T=T===id?null:id;document.querySelectorAll('.tc-card').forEach(c=>c.classList.toggle('sel',c.id==='tc-'+T));}
 function stS(tid,dim,score,btn){TS[tid+"_"+dim]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
 function nx2(){document.querySelectorAll('.cmt[data-tid]').forEach(ta=>{TC[ta.dataset.tid]=ta.value.trim();});if(!Object.values(TS).some(Boolean)){document.getElementById("te").classList.add("s");return;}S=3;go();}
 function st3(el){el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🍽️</span>饭堂评价</div><div class="fun-line">食堂阿姨的手抖不抖？来评个分！</div>${sg("c","饭菜口味",CS,CC)}${sg("c","服务态度",CS,CC)}</div><div class="card"><div class="sec-tit"><span class="ico">🏠</span>宿舍评价</div><div class="fun-line">宿舍生活怎么样？宿管阿姨等你评价~</div>${sg("d","宿舍管理",DS,DC)}${sg("d","宿管服务",DS,DC)}</div><div class="card"><div class="sec-tit"><span class="ico">💬</span>个人建议</div><div class="fun-line">还有什么想说的？畅所欲言吧！</div><textarea class="big" id="gs" placeholder="请留下您的宝贵建议（选填）"></textarea></div><div class="row2 mb16"><button class="btn btn-o" onclick="S=2;go()">← 上一步</button><button class="btn btn-p" onclick="nx3()">下一步 →</button></div>`;}
-function sg(pf,lb,ss,cc){const v=ss[lb];let h=`<div class="score-row"><span class="dim-label">${lb}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" onclick="stG('${pf}','${lb}',${i},this)">${i}</button>`;return h+`</div></div><textarea class="cmt" placeholder="${lb}方面有什么建议？（选填）" data-gp="${pf}_${lb}">${cc[lb]||""}</textarea>`;}
+function sg(pf,lb,ss,cc){const v=ss[lb];let h=`<div class="score-row"><span class="dim-label">${lb}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stG('${pf}','${lb}',${i},this)">${i}</button>`;return h+`</div></div><textarea class="cmt" placeholder="${lb}方面有什么建议？（选填）" data-gp="${pf}_${lb}">${cc[lb]||""}</textarea>`;}
 function stG(pf,lb,score,btn){if(pf==="c")CS[lb]=score;else DS[lb]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
 function nx3(){document.querySelectorAll('.cmt[data-gp]').forEach(ta=>{const[p,k]=ta.dataset.gp.split("_");if(p==="c")CC[k]=ta.value.trim();else DC[k]=ta.value.trim();});S=4;go();}
 async function st4(el){let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}let s=`<p><b>班级：</b>${x(clsName)||"未知"}</p><p><b>教师已评：</b>${Object.values(TS).filter(Boolean).length} 项</p><p><b>饭堂已评：</b>${Object.values(CS).filter(Boolean).length} 项</p><p><b>宿舍已评：</b>${Object.values(DS).filter(Boolean).length} 项</p>`;if(Object.values(TC).some(Boolean)||Object.values(CC).some(Boolean)||Object.values(DC).some(Boolean))s+=`<p><b>建议：</b>已填写</p>`;el.innerHTML=`<div class="card tc"><div class="sec-tit" style="justify-content:center"><span class="ico">✅</span>确认提交</div><div class="fun-line">最后确认一下，提交后就不能反悔咯~</div><div style="text-align:left;margin:16px 0;font-size:14px;line-height:2.2">${s}</div><div class="row2 mb16"><button class="btn btn-o" onclick="S=3;go()">← 返回修改</button><button class="btn btn-p" id="sb" onclick="doSb()">确认提交</button></div><div class="err mt8" id="se"></div></div>`;}
