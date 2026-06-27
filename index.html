@@ -232,7 +232,7 @@ const DM=["教学态度","课堂讲解","示范教学","课后辅导","作业点
 const sb=supabase.createClient(SB,SK);
 
 function go(){const h=location.hash.slice(1)||"s";
-  if(h==="s"||h==="ok")srv();else if(h==="adm"||h==="dash")admEnter();else srv();}
+  if(h==="s"||h==="ok")srv();else if(h==="adm"||h==="admin"||h==="dash")admEnter();else srv();}
 let S=1,C=null,T=null,TS={},TC={},CS={},CC={},DS={},DC={};
 function isAdm(){return!!sessionStorage.getItem("adm");}
 function isDn(){return!!localStorage.getItem("dn")&&!isAdm();}
