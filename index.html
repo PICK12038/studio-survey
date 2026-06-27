@@ -8,96 +8,106 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#0052d9;--blue-light:#e8f0fe;--blue-hover:#003db8;--green:#00a870;--green-bg:#e6f7f0;--red:#d54941;--red-bg:#fdece8;--bg:#f3f4f6;--card:#fff;--text:#1d2129;--text2:#646a73;--text3:#8f959e;--border:#e5e6eb;--radius:10px;--shadow:0 1px 4px rgba(0,0,0,.04);--shadow-lg:0 4px 16px rgba(0,0,0,.06)}
 html{font-size:16px;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#f5f7fa 0%,#e4e9f2 100%);min-height:100vh;color:#1a1a1a;line-height:1.5}
-.container{max-width:760px;margin:0 auto;padding:24px 16px 48px}
-.card{background:#fff;border-radius:14px;padding:22px 18px;margin-bottom:18px;box-shadow:0 2px 12px rgba(0,0,0,.05);border:1px solid #f0f0f0;transition:box-shadow .2s}
-h1{font-size:22px;margin-bottom:4px;font-weight:700;letter-spacing:-0.3px}
-h2{font-size:16px;margin-bottom:14px;color:#1e293b;font-weight:600}
-.subtitle{color:#94a3b8;font-size:13px;margin-bottom:18px}
-.fun-caption{font-size:12px;color:#94a3b8;font-style:italic;margin-bottom:12px;padding-left:4px;border-left:3px solid #e2e8f0}
-.fun-caption::before{content:'💬 '}
-select{width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;background:#f8fafc;appearance:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;transition:border .15s,background .15s}
-select:focus{border-color:#6366f1;background:#fff;outline:none}
-.section-icon{font-size:20px;margin-right:6px;vertical-align:-2px}
-.score-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f1f5f9;gap:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+.container{max-width:780px;margin:0 auto;padding:24px 16px 48px}
+.card{background:var(--card);border-radius:var(--radius);padding:24px 20px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.section-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.section-title .icon{font-size:18px}
+.section-desc{font-size:12px;color:var(--text3);margin-bottom:16px}
+.fun-tag{display:inline-block;font-size:11px;color:var(--text3);font-style:italic;margin-bottom:14px;padding-left:8px;border-left:2px solid var(--border)}
+select{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);appearance:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238f959e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;transition:border .15s}
+select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-light)}
+.score-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);gap:8px}
 .score-row:last-child{border-bottom:none}
-.score-row .dim-label{font-size:14px;color:#334155;flex:1;min-width:0;word-break:break-all;font-weight:500}
+.score-row .dim-label{font-size:14px;color:var(--text);flex:1;min-width:0;word-break:break-all}
 .score-btns{display:flex;gap:4px;flex-shrink:0}
-.score-btn{min-width:33px;height:33px;padding:0 4px;border:1.5px solid #e2e8f0;border-radius:7px;background:#fff;font-size:13px;cursor:pointer;transition:all .12s;color:#64748b;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;font-weight:500}
-.score-btn:active{transform:scale(.94)}
-.score-btn:hover{border-color:#818cf8;color:#6366f1;background:#f8faff}
-.score-btn.active{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border-color:#6366f1;font-weight:600;box-shadow:0 2px 6px rgba(99,102,241,.25)}
-.teacher-card{border:1.5px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;background:#fafbfd}
-.teacher-card:hover{border-color:#c7d2fe;box-shadow:0 2px 8px rgba(99,102,241,.06)}
-.teacher-card.selected{border-color:#818cf8;background:#f8faff;box-shadow:0 2px 8px rgba(99,102,241,.1)}
+.score-btn{min-width:34px;height:34px;padding:0;border:1px solid var(--border);border-radius:7px;background:var(--card);font-size:13px;cursor:pointer;transition:all .12s;color:var(--text2);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;font-weight:500}
+.score-btn:active{transform:scale(.93)}
+.score-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.score-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600}
+.teacher-card{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:#fafbfc;transition:all .15s}
+.teacher-card:hover{border-color:#b8c5e0}
+.teacher-card.selected{border-color:var(--blue);background:var(--blue-light)}
 .teacher-card .tc-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer}
-.teacher-card .tc-name{font-weight:600;font-size:15px;color:#1e293b}
-.teacher-card .tc-subjects{font-size:11px;color:#94a3b8}
-.badge{font-size:10px;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#b45309;flex-shrink:0;font-weight:500}
-.teacher-comment,.group-comment{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;resize:none;min-height:48px;font-family:inherit;margin-top:10px;background:#f8fafc;transition:border .15s}
-.teacher-comment:focus,.group-comment:focus{border-color:#818cf8;outline:none;background:#fff}
-textarea:not(.teacher-comment):not(.group-comment){width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit;background:#f8fafc;transition:border .15s}
-textarea:not(.teacher-comment):not(.group-comment):focus{border-color:#818cf8;outline:none;background:#fff}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;letter-spacing:.2px}
+.teacher-card .tc-name{font-weight:600;font-size:15px}
+.teacher-card .tc-subjects{font-size:11px;color:var(--text3)}
+.badge{font-size:10px;padding:1px 7px;border-radius:10px;background:#fff3e0;color:#e65100;flex-shrink:0;font-weight:500;border:1px solid #ffe0b2}
+.cmt-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;resize:none;min-height:44px;font-family:inherit;margin-top:10px;background:#fff;transition:border .15s}
+.cmt-input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-light)}
+textarea.large{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit;transition:border .15s}
+textarea.large:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-light)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 22px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;letter-spacing:.2px}
 .btn:active{transform:scale(.97)}
-.btn-primary{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;width:100%;box-shadow:0 2px 8px rgba(99,102,241,.25)}
-.btn-primary:hover{box-shadow:0 4px 14px rgba(99,102,241,.35);transform:translateY(-1px)}
-.btn-primary:active{transform:scale(.97) translateY(0)}
-.btn-primary:disabled{background:#c7d2fe;cursor:not-allowed;box-shadow:none;transform:none}
-.btn-outline{background:#fff;color:#6366f1;border:1.5px solid #c7d2fe}
-.btn-outline:hover{background:#f8faff;border-color:#818cf8}
-.btn-sm{padding:8px 16px;font-size:13px;border-radius:8px}
-.btn-export{background:#fff;color:#6366f1;border:1.5px solid #c7d2fe;padding:8px 16px;font-size:13px;border-radius:8px;cursor:pointer;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
-.btn-export:hover{background:#f8faff;border-color:#818cf8}
-.btn-export::before{content:'📥 '}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:4px 0 18px}
-.nav a{color:#6366f1;text-decoration:none;font-size:13px;font-weight:500}
-.step-indicator{display:flex;gap:6px;margin-bottom:22px}
-.step{flex:1;text-align:center;padding:10px 4px;border-radius:10px;background:#f1f5f9;font-size:11px;color:#94a3b8;transition:all .2s;font-weight:500}
-.step.active{background:#eef2ff;color:#6366f1;font-weight:600}
-.step.done{background:#dcfce7;color:#16a34a}
-.success-icon{font-size:52px;text-align:center;margin:20px 0 8px}
+.btn-primary{background:var(--blue);color:#fff;width:100%}
+.btn-primary:hover{background:var(--blue-hover)}
+.btn-primary:disabled{background:#bbd3fb;cursor:not-allowed}
+.btn-outline{background:var(--card);color:var(--blue);border:1px solid var(--blue)}
+.btn-outline:hover{background:var(--blue-light)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:6px}
+.btn-export{background:var(--card);color:var(--blue);border:1px solid #b8c5e0;padding:7px 14px;font-size:12px;border-radius:6px;cursor:pointer;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn-export:hover{background:var(--blue-light);border-color:var(--blue)}
+.btn-export::before{content:'↓ '}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:6px 0 20px}
+.nav .brand{font-size:18px;font-weight:700;color:var(--text)}
+.nav .brand span{color:var(--blue)}
+.nav a{color:var(--text3);text-decoration:none;font-size:12px;transition:color .15s}
+.nav a:hover{color:var(--blue)}
+.step-track{display:flex;gap:6px;margin-bottom:24px}
+.step-dot{flex:1;text-align:center;padding:9px 4px;border-radius:8px;background:#e8eaed;font-size:12px;color:var(--text3);transition:all .2s}
+.step-dot.active{background:var(--blue);color:#fff;font-weight:600}
+.step-dot.done{background:var(--green);color:#fff}
+.success-box{text-align:center;padding:32px 16px}
+.success-box .check{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--green)}
 .text-center{text-align:center}
 .mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}
-.error{color:#dc2626;font-size:12px;margin-top:4px;display:flex;align-items:center;gap:4px}
-.error::before{content:'⚠️ '}
-.login-box{max-width:380px;margin:80px auto}
-.login-box .login-header{text-align:center;margin-bottom:24px}
-.login-box .login-header h1{color:#6366f1}
-.login-box input{width:100%;padding:14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;margin-bottom:14px;background:#f8fafc;transition:border .15s}
-.login-box input:focus{border-color:#6366f1;background:#fff;outline:none}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}
-.stat-card{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:12px;padding:18px;text-align:center;border:1px solid #e2e8f0}
-.stat-card .stat-num{font-size:30px;font-weight:700;color:#6366f1}
-.stat-card .stat-label{font-size:12px;color:#94a3b8;margin-top:4px}
-.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid #f1f5f9}
+.err-msg{color:var(--red);font-size:12px;margin-top:4px;display:none;align-items:center;gap:4px}
+.err-msg.show{display:flex}
+.login-wrap{max-width:400px;margin:80px auto}
+.login-wrap .login-brand{text-align:center;margin-bottom:28px}
+.login-wrap .login-brand h1{font-size:24px;color:var(--blue);font-weight:700}
+.login-wrap input{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;transition:border .15s}
+.login-wrap input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-light)}
+.grid-4{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.grid-4 .kpi{padding:18px 16px;border-radius:10px;text-align:center}
+.grid-4 .kpi.blue{background:var(--blue-light);color:var(--blue)}
+.grid-4 .kpi.green{background:var(--green-bg);color:var(--green)}
+.grid-4 .kpi.orange{background:#fff3e0;color:#e65100}
+.grid-4 .kpi.purple{background:#f3e8ff;color:#7c3aed}
+.grid-4 .kpi .num{font-size:28px;font-weight:700}
+.grid-4 .kpi .lbl{font-size:12px;margin-top:2px;opacity:.8}
+.tabs-bar{display:flex;gap:4px;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.tabs-bar button{padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;background:transparent;border:none;transition:all .15s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;color:var(--text2);font-weight:500}
+.tabs-bar button:hover{background:#e8eaed;color:var(--text)}
+.tabs-bar button.on{background:var(--blue);color:#fff}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #f1f5f9}
-th{background:#f8fafc;font-weight:600;color:#475569;font-size:12px;position:sticky;top:0;z-index:1}
-tr:hover td{background:#fafbfe}
-.suggestion-item{padding:14px 0;border-bottom:1px solid #f1f5f9}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f7f8fa;font-weight:600;color:var(--text2);font-size:12px;position:sticky;top:0}
+tbody tr:hover td{background:#f7f8fa}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.select-sm{padding:8px 32px 8px 10px;font-size:13px;background-position:right 8px center;display:inline-block;width:auto;min-width:140px}
+.rating-bar{height:6px;border-radius:3px;background:#e8eaed;min-width:60px;overflow:hidden}
+.rating-bar .fill{height:100%;border-radius:3px;background:var(--blue);transition:width .3s}
+.suggestion-list{border-top:1px solid var(--border);margin-top:16px;padding-top:14px}
+.suggestion-list h4{font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:600}
+.suggestion-item{padding:12px 0;border-bottom:1px solid var(--border)}
 .suggestion-item:last-child{border-bottom:none}
-.suggestion-item .meta{font-size:11px;color:#94a3b8;margin-bottom:6px}
-.suggestion-item .content{white-space:pre-wrap;font-size:14px;color:#334155;line-height:1.6}
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.tabs{display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.tab{padding:9px 16px;border-radius:10px;font-size:13px;cursor:pointer;background:#f1f5f9;border:none;transition:all .15s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;color:#64748b;font-weight:500}
-.tab:hover{background:#eef2ff;color:#6366f1}
-.tab.active{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;box-shadow:0 2px 6px rgba(99,102,241,.25)}
-.hidden{display:none}
-.admin-link{color:#cbd5e1;font-size:11px;text-decoration:none;padding:8px;transition:color .15s}
-.admin-link:hover{color:#6366f1}
-.btn-row{display:flex;gap:10px}
-.btn-row .btn{flex:1}
-.select-sm{width:auto;min-width:150px;padding:9px 34px 9px 12px;font-size:13px;background-position:right 10px center;display:inline-block}
-.info-banner{background:#fef3c7;color:#92400e;padding:14px 18px;border-radius:10px;font-size:13px;text-align:center;margin-bottom:18px;border:1px solid #fde68a}
-.empty-state{text-align:center;padding:24px;color:#94a3b8;font-size:13px}
-.suggestion-block{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:14px;background:#fafbfd}
-.suggestion-block h3{font-size:13px;color:#475569;margin-bottom:10px;font-weight:600}
-@media(min-width:641px){.container{padding:28px 28px 56px}.card{padding:28px 24px}h1{font-size:26px}.subtitle{font-size:14px;margin-bottom:24px}.step{font-size:13px}.score-btn{min-width:38px;height:38px;font-size:14px}.teacher-card{padding:20px}.score-row{padding:13px 0}.score-row .dim-label{font-size:15px}.stat-card{padding:22px}.stat-card .stat-num{font-size:36px}.stat-card .stat-label{font-size:13px}.tabs{gap:8px}.tab{padding:10px 20px;font-size:14px}}
+.suggestion-item .sug-meta{font-size:11px;color:var(--text3);margin-bottom:4px}
+.suggestion-item .sug-body{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap}
+.empty{text-align:center;padding:24px;color:var(--text3);font-size:13px}
+.badge-row{display:flex;gap:4px;flex-wrap:wrap}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.tag-blue{background:var(--blue-light);color:var(--blue)}
+.tag-green{background:var(--green-bg);color:var(--green)}
+.tag-orange{background:#fff3e0;color:#e65100}
+.footer-link{text-align:center;margin-top:20px}
+.footer-link a{color:var(--text3);font-size:11px;text-decoration:none;transition:color .15s}
+.footer-link a:hover{color:var(--blue)}
+@media(min-width:641px){.container{padding:28px 28px 56px}.card{padding:28px 24px}.section-title{font-size:18px}.score-btn{min-width:38px;height:38px;font-size:14px}.teacher-card{padding:20px}.score-row{padding:13px 0}.grid-4{grid-template-columns:repeat(4,1fr)}.grid-4 .kpi .num{font-size:34px}.tabs-bar button{padding:10px 22px;font-size:14px}}
 @media(max-width:640px){.score-btn{min-width:30px;height:30px;font-size:12px;border-radius:6px}.score-row .dim-label{font-size:13px}.score-btns{gap:3px}.teacher-card{padding:14px}.teacher-card .tc-name{font-size:14px}}
-@media(max-width:400px){.container{padding:14px 10px 36px}.card{padding:16px 12px;border-radius:12px}h1{font-size:19px}.score-btn{min-width:27px;height:27px;font-size:11px;border-radius:5px}.score-btns{gap:2px}.step{font-size:10px;padding:7px 2px}.teacher-card .tc-name{font-size:13px}.stats-grid{grid-template-columns:1fr}.score-row{gap:4px;padding:9px 0}.score-row .dim-label{font-size:12px}select{font-size:14px;padding:11px}.tabs{gap:4px}.tab{padding:8px 12px;font-size:12px}}
+@media(max-width:400px){.container{padding:14px 10px 36px}.card{padding:16px 12px;border-radius:10px}h1{font-size:19px}.score-btn{min-width:27px;height:27px;font-size:11px;border-radius:5px}.score-btns{gap:2px}.step-dot{font-size:10px;padding:7px 2px}.teacher-card .tc-name{font-size:13px}.grid-4{grid-template-columns:1fr}.score-row{gap:4px;padding:9px 0}.score-row .dim-label{font-size:12px}select{font-size:14px;padding:11px}.tabs-bar{gap:2px}.tabs-bar button{padding:8px 12px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -106,411 +116,302 @@ tr:hover td{background:#fafbfe}
 <script>
 const SUPABASE_URL="https://iemiujgdblsuvzsvirju.supabase.co";
 const SUPABASE_KEY="sb_publishable_LCj2enxyQTWRIzXZ7LPaFA_doIwMzCx";
-const ADMIN_CRED={user:"admin",pass:"admin123"};
+const ADMIN={user:"admin",pass:"admin123"};
 const DIMS=["教学态度","课堂讲解","示范教学","课后辅导","作业点评"];
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 function route(){
-  const hash=location.hash.slice(1)||"survey";
+  const h=location.hash.slice(1)||"survey";
   document.getElementById("app").innerHTML="";
-  if(hash==="survey")renderSurvey();
-  else if(hash==="done")renderDone();
-  else if(hash==="admin")renderAdmin();
-  else if(hash==="admin/dashboard")renderDashboard();
+  if(h==="survey")renderSurvey();else if(h==="done")renderDone();
+  else if(h==="admin")renderAdmin();else if(h==="dashboard")renderDashboard();
   else renderSurvey();
 }
 
-let step=1,selectedClass=null,selectedTeacher=null,teacherScores={},teacherComments={},canteenScores={},canteenComments={},dormScores={},dormComments={};
+let step=1,clsId=null,tchId=null,tScores={},tComments={},cScores={},cComments={},dScores={},dComments={};
+function isAdmin(){return!!sessionStorage.getItem("admin");}
+function alreadyDone(){return!!localStorage.getItem("survey_done")&&!isAdmin();}
+function avg(s){return s.length?(s.reduce((a,b)=>a+b,0)/s.length).toFixed(1):"-";}
+function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function ts(){return new Date().toISOString().slice(0,10);}
 
-// ── 每设备限制一次（管理员豁免） ──
-function isAdmin(){return !!sessionStorage.getItem("admin_auth");}
-function alreadySubmitted(){return !!localStorage.getItem("survey_submitted")&&!isAdmin();}
-function calcAvg(scores){return scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):"-";}
-
-// ═══════════ 学生问卷 ═══════════
+// ══════════ SURVEY ══════════
 async function renderSurvey(){
-  if(alreadySubmitted()){
-    document.getElementById("app").innerHTML=`<div class="card text-center"><div class="success-icon">&#10003;</div><h1>问卷已提交</h1><p class="subtitle">每台设备仅限提交一次，感谢您的参与！</p></div>`;
-    return;
-  }
+  if(alreadyDone()){document.getElementById("app").innerHTML=`<div class="card"><div class="success-box"><div class="check">✓</div><h2>问卷已提交</h2><p class="section-desc">每台设备仅限提交一次，感谢参与</p></div></div>`;return;}
   const{data:classes}=await sb.from("classes").select("*").order("display_order");
-  document.getElementById("app").innerHTML=`<h1><span class="section-icon">📋</span>画室满意度调查</h1><p class="subtitle">你的每一分，都让我们变得更好</p>
-    <div class="step-indicator">
-      <div class="step ${step===1?'active':step>1?'done':''}">选择班级</div>
-      <div class="step ${step===2?'active':step>2?'done':''}">评价教师</div>
-      <div class="step ${step===3?'active':step>3?'done':''}">饭堂宿舍</div>
-      <div class="step ${step===4?'active':step>4?'done':''}">确认提交</div>
-    </div>
-    <div id="step-content"></div>
-    <p class="text-center mt-24"><a href="#admin" class="admin-link">管理后台</a></p>`;
-  const content=document.getElementById("step-content");
-  if(step===1)renderStep1(content,classes);
-  else if(step===2)renderStep2(content);
-  else if(step===3)renderStep3(content);
-  else if(step===4)renderStep4(content);
+  document.getElementById("app").innerHTML=`<h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--text3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
+    <div class="step-track">
+      <div class="step-dot${step===1?' active':step>1?' done':''}">选择班级</div>
+      <div class="step-dot${step===2?' active':step>2?' done':''}">评价教师</div>
+      <div class="step-dot${step===3?' active':step>3?' done':''}">饭堂宿舍</div>
+      <div class="step-dot${step===4?' active':step>4?' done':''}">确认提交</div>
+    </div><div id="step-box"></div>
+    <div class="footer-link"><a href="#admin">管理后台</a></div>`;
+  const box=document.getElementById("step-box");
+  if(step===1)step1(box,classes);else if(step===2)step2(box);
+  else if(step===3)step3(box);else if(step===4)step4(box);
 }
-
-function renderStep1(el,classes){
+function step1(el,classes){
   let o='<option value="">请选择班级</option>';
   classes.forEach(c=>o+=`<option value="${c.id}">${c.name}</option>`);
-  el.innerHTML=`<div class="card"><h2><span class="section-icon">🏫</span>所属班级</h2>
-    <p class="fun-caption">选个班级，开启你的评价之旅吧</p>
-    <select id="class-select">${o}</select><p class="error hidden" id="class-err">请选择班级</p>
-    <button class="btn btn-primary mt-24" onclick="nextStep1()">下一步 →</button></div>`;
+  el.innerHTML=`<div class="card"><div class="section-title"><span class="icon">🏫</span>所属班级</div><div class="fun-tag">选个班级，开启你的评价之旅吧</div>
+    <select id="clsSel">${o}</select><div class="err-msg" id="clsErr">请选择班级</div>
+    <button class="btn btn-primary mt-24" onclick="goStep1()">下一步 →</button></div>`;
 }
-
-function nextStep1(){
-  const sel=document.getElementById("class-select").value;
-  if(!sel){document.getElementById("class-err").classList.remove("hidden");return;}
-  selectedClass=sel;step=2;route();
-}
-
-async function renderStep2(el){
-  const{data:teachers}=await sb.from("teachers").select("*").eq("class_id",selectedClass).order("is_head_teacher",{ascending:false});
-  let html=`<div class="card"><h2><span class="section-icon">👨‍🏫</span>评价教师</h2>
-    <p class="fun-caption">给老师们打个分吧，他们会看到的！（大概）</p>`;
+function goStep1(){const v=document.getElementById("clsSel").value;if(!v){document.getElementById("clsErr").classList.add("show");return;}clsId=v;step=2;route();}
+async function step2(el){
+  const{data:teachers}=await sb.from("teachers").select("*").eq("class_id",clsId).order("is_head_teacher",{ascending:false});
+  let h=`<div class="card"><div class="section-title"><span class="icon">👨‍🏫</span>评价教师</div><div class="fun-tag">给老师们打个分吧，他们会看到的！（大概）</div>`;
   teachers.forEach(t=>{
-    const sel=selectedTeacher==t.id?" selected":"";
-    html+=`<div class="teacher-card${sel}" id="tc-${t.id}">
-      <div class="tc-header" onclick="selectTeacher(${t.id})">
-        <span class="tc-name">${t.name}</span>
-        ${t.subjects?`<span class="tc-subjects">${t.subjects}</span>`:''}
-        ${t.is_head_teacher?'<span class="badge">班主任</span>':''}
-      </div>`;
+    h+=`<div class="teacher-card${tchId==t.id?' selected':''}" id="tc-${t.id}">
+      <div class="tc-header" onclick="pickTeacher(${t.id})"><span class="tc-name">${t.name}</span>${t.subjects?`<span class="tc-subjects">${t.subjects}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;
     DIMS.forEach(d=>{
-      const v=teacherScores[t.id+"_"+d]||"";
-      html+=`<div class="score-row" data-tid="${t.id}" data-dim="${d}"><span class="dim-label">${d}</span><div class="score-btns">`;
-      for(let i=1;i<=10;i++)html+=`<button class="score-btn${v==i?' active':''}" data-score="${i}" onclick="setTeacherScore(${t.id},'${d}',${i},this)">${i}</button>`;
-      html+=`</div></div>`;
+      const v=tScores[t.id+"_"+d];
+      h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;
+      for(let i=1;i<=10;i++)h+=`<button class="score-btn${v==i?' active':''}" onclick="setTS(${t.id},'${d}',${i},this)">${i}</button>`;
+      h+=`</div></div>`;
     });
-    html+=`<textarea class="teacher-comment" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${teacherComments[t.id]||""}</textarea>`;
-    html+=`</div>`;
+    h+=`<textarea class="cmt-input" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${tComments[t.id]||""}</textarea></div>`;
   });
-  html+=`<p class="error hidden mt-16" id="teacher-err">请至少为一位教师评分</p>
-    <div class="btn-row mt-16"><button class="btn btn-outline" onclick="step=1;route()">← 上一步</button><button class="btn btn-primary" onclick="nextStep2()">下一步 →</button></div></div>`;
-  el.innerHTML=html;
+  h+=`<div class="err-msg${Object.values(tScores).some(Boolean)?'':' show'}" id="tErr">请至少为一位教师评分</div>
+    <div class="btn-row" style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-outline" style="flex:1" onclick="step=1;route()">← 上一步</button><button class="btn btn-primary" style="flex:1" onclick="goStep2()">下一步 →</button></div></div>`;
+  el.innerHTML=h;
 }
-
-function selectTeacher(tid){
-  selectedTeacher=selectedTeacher===tid?null:tid;
-  document.querySelectorAll('.teacher-card').forEach(tc=>tc.classList.toggle('selected',tc.id==='tc-'+selectedTeacher));
-}
-
-function setTeacherScore(tid,dim,score,btn){
-  teacherScores[tid+"_"+dim]=score;
-  const row=btn.closest('.score-row');
-  if(row)row.querySelectorAll('.score-btn').forEach(b=>b.classList.toggle('active',+b.dataset.score===score));
-}
-
-function nextStep2(){
-  document.querySelectorAll('.teacher-comment').forEach(ta=>{teacherComments[ta.dataset.tid]=ta.value.trim();});
-  if(!Object.values(teacherScores).some(Boolean)){document.getElementById("teacher-err").classList.remove("hidden");return;}
+function pickTeacher(id){tchId=tchId===id?null:id;document.querySelectorAll('.teacher-card').forEach(tc=>tc.classList.toggle('selected',tc.id==='tc-'+tchId));}
+function setTS(tid,dim,score,btn){tScores[tid+"_"+dim]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.score-btn').forEach(b=>b.classList.toggle('active',+b.dataset.score===score));}
+function goStep2(){
+  document.querySelectorAll('.cmt-input[data-tid]').forEach(ta=>{tComments[ta.dataset.tid]=ta.value.trim();});
+  if(!Object.values(tScores).some(Boolean)){document.getElementById("tErr").classList.add("show");return;}
   step=3;route();
 }
-
-function renderStep3(el){
-  el.innerHTML=`<div class="card"><h2><span class="section-icon">🍽️</span>饭堂评价</h2>
-    <p class="fun-caption">食堂阿姨的手抖不抖？来评个分！</p>
-    ${scoreGroup("canteen","饭菜口味",canteenScores,canteenComments,"饭菜口味")}
-    ${scoreGroup("canteen","服务态度",canteenScores,canteenComments,"服务态度")}
-  </div>
-  <div class="card"><h2><span class="section-icon">🏠</span>宿舍评价</h2>
-    <p class="fun-caption">宿舍生活怎么样？宿管阿姨等你评价~</p>
-    ${scoreGroup("dorm","宿舍管理",dormScores,dormComments,"宿舍管理")}
-    ${scoreGroup("dorm","宿管服务",dormScores,dormComments,"宿管服务")}
-  </div>
-  <div class="card"><h2><span class="section-icon">💬</span>个人建议</h2>
-    <p class="fun-caption">还有什么想说的？畅所欲言吧！</p>
-    <textarea id="suggestion" placeholder="请留下您的宝贵建议（选填）"></textarea></div>
-  <div class="btn-row mb-16"><button class="btn btn-outline" onclick="step=2;route()">← 上一步</button><button class="btn btn-primary" onclick="nextStep3()">下一步 →</button></div>`;
+function step3(el){
+  el.innerHTML=`<div class="card"><div class="section-title"><span class="icon">🍽️</span>饭堂评价</div><div class="fun-tag">食堂阿姨的手抖不抖？来评个分！</div>
+    ${scoreGrp("canteen","饭菜口味",cScores,cComments)}${scoreGrp("canteen","服务态度",cScores,cComments)}</div>
+  <div class="card"><div class="section-title"><span class="icon">🏠</span>宿舍评价</div><div class="fun-tag">宿舍生活怎么样？宿管阿姨等你评价~</div>
+    ${scoreGrp("dorm","宿舍管理",dScores,dComments)}${scoreGrp("dorm","宿管服务",dScores,dComments)}</div>
+  <div class="card"><div class="section-title"><span class="icon">💬</span>个人建议</div><div class="fun-tag">还有什么想说的？畅所欲言吧！</div>
+    <textarea class="large" id="genSug" placeholder="请留下您的宝贵建议（选填）"></textarea></div>
+  <div class="btn-row" style="display:flex;gap:10px;margin-bottom:16px"><button class="btn btn-outline" style="flex:1" onclick="step=2;route()">← 上一步</button><button class="btn btn-primary" style="flex:1" onclick="goStep3()">下一步 →</button></div>`;
 }
-
-function scoreGroup(prefix,label,scoreStore,commentStore,dimKey){
-  const v=scoreStore[label]||"";
+function scoreGrp(pfx,label,sStore,cStore){
+  const v=sStore[label];
   let h=`<div class="score-row"><span class="dim-label">${label}</span><div class="score-btns">`;
-  for(let i=1;i<=10;i++)h+=`<button class="score-btn${v==i?' active':''}" data-score="${i}" onclick="setGroupScore('${prefix}','${label}',${i},this)">${i}</button>`;
-  h+=`</div></div>`;
-  h+=`<textarea class="group-comment" placeholder="${label}方面有什么建议？（选填）" data-group="${prefix}_${dimKey}">${commentStore[dimKey]||""}</textarea>`;
-  return h;
+  for(let i=1;i<=10;i++)h+=`<button class="score-btn${v==i?' active':''}" onclick="setGS('${pfx}','${label}',${i},this)">${i}</button>`;
+  return h+`</div></div><textarea class="cmt-input" placeholder="${label}方面有什么建议？（选填）" data-grp="${pfx}_${label}">${cStore[label]||""}</textarea>`;
 }
-
-function setGroupScore(prefix,label,score,btn){
-  if(prefix==="canteen")canteenScores[label]=score;else dormScores[label]=score;
-  const row=btn.closest('.score-row');
-  if(row)row.querySelectorAll('.score-btn').forEach(b=>b.classList.toggle('active',+b.dataset.score===score));
+function setGS(pfx,label,score,btn){
+  if(pfx==="canteen")cScores[label]=score;else dScores[label]=score;
+  const r=btn.closest('.score-row');if(r)r.querySelectorAll('.score-btn').forEach(b=>b.classList.toggle('active',+b.dataset.score===score));
 }
-
-function nextStep3(){
-  // 收集饭堂/宿舍评语
-  document.querySelectorAll('.group-comment').forEach(ta=>{
-    const gp=ta.dataset.group; // "canteen_饭菜口味"
-    if(gp.startsWith("canteen_"))canteenComments[gp.slice(8)]=ta.value.trim();
-    else if(gp.startsWith("dorm_"))dormComments[gp.slice(5)]=ta.value.trim();
+function goStep3(){
+  document.querySelectorAll('.cmt-input[data-grp]').forEach(ta=>{
+    const[pfx,key]=ta.dataset.grp.split("_");
+    if(pfx==="canteen")cComments[key]=ta.value.trim();else dComments[key]=ta.value.trim();
   });
   step=4;route();
 }
-
-async function renderStep4(el){
-  const{data:cls}=await sb.from("classes").select("name").eq("id",selectedClass).single();
-  let s=`<p><strong>班级：</strong>${cls.name}</p>`;
-  s+=`<p><strong>教师已评：</strong>${Object.values(teacherScores).filter(Boolean).length} 项</p>`;
-  s+=`<p><strong>饭堂已评：</strong>${Object.values(canteenScores).filter(Boolean).length} 项</p>`;
-  s+=`<p><strong>宿舍已评：</strong>${Object.values(dormScores).filter(Boolean).length} 项</p>`;
-  const hasComments=Object.values(teacherComments).some(Boolean)||Object.values(canteenComments).some(Boolean)||Object.values(dormComments).some(Boolean);
-  if(hasComments)s+=`<p><strong>建议：</strong>已填写</p>`;
-  el.innerHTML=`<div class="card text-center"><h2><span class="section-icon">✅</span>确认提交</h2>
-    <p class="fun-caption">最后确认一下，提交后就不能反悔咯~</p>
-    <div style="text-align:left;margin:16px 0;font-size:14px;line-height:2">${s}</div>
-    <div class="btn-row mb-16"><button class="btn btn-outline" onclick="step=3;route()">← 返回修改</button><button class="btn btn-primary" id="submit-btn" onclick="doSubmit()">确认提交 ✓</button></div>
-    <p class="error hidden mt-8" id="submit-err"></p></div>`;
+async function step4(el){
+  const{data:cls}=await sb.from("classes").select("name").eq("id",clsId).single();
+  let s=`<p><b>班级：</b>${cls.name}</p><p><b>教师已评：</b>${Object.values(tScores).filter(Boolean).length} 项</p><p><b>饭堂已评：</b>${Object.values(cScores).filter(Boolean).length} 项</p><p><b>宿舍已评：</b>${Object.values(dScores).filter(Boolean).length} 项</p>`;
+  if(Object.values(tComments).some(Boolean)||Object.values(cComments).some(Boolean)||Object.values(dComments).some(Boolean))s+=`<p><b>建议：</b>已填写</p>`;
+  el.innerHTML=`<div class="card text-center"><div class="section-title" style="justify-content:center"><span class="icon">✅</span>确认提交</div><div class="fun-tag">最后确认一下，提交后就不能反悔咯~</div>
+    <div style="text-align:left;margin:16px 0;font-size:14px;line-height:2.2">${s}</div>
+    <div class="btn-row" style="display:flex;gap:10px;margin-bottom:16px"><button class="btn btn-outline" style="flex:1" onclick="step=3;route()">← 返回修改</button><button class="btn btn-primary" style="flex:1" id="subBtn" onclick="doSubmit()">确认提交</button></div>
+    <div class="err-msg mt-8" id="subErr"></div></div>`;
 }
-
 async function doSubmit(){
-  if(alreadySubmitted()){showErr("您已提交过问卷",null);return;}
-  const btn=document.getElementById("submit-btn");btn.disabled=true;btn.textContent="提交中...";
+  if(alreadyDone())return;
+  const btn=document.getElementById("subBtn");btn.disabled=true;btn.textContent="提交中...";
+  if(!clsId){showErr("请重新选择班级",btn);return;}
   const sid=crypto.randomUUID?crypto.randomUUID().slice(0,12):Math.random().toString(36).slice(2,14);
-  const{error:e1}=await sb.from("submissions").insert({id:sid,class_id:Number(selectedClass),teacher_id:selectedTeacher?Number(selectedTeacher):null});
-  if(e1){showErr(e1.message,btn);return;}
+  // 写入 submissions
+  const{error:e0}=await sb.from("submissions").insert({id:sid,class_id:Number(clsId),teacher_id:tchId?Number(tchId):null});
+  if(e0){showErr("提交失败: "+e0.message,btn);return;}
   // 教师评分
-  const trs=[];for(let k in teacherScores){if(!teacherScores[k])continue;const idx=k.indexOf("_");trs.push({submission_id:sid,dimension:k.slice(idx+1),score:teacherScores[k]});}
-  if(trs.length){const{error:e2}=await sb.from("teacher_ratings").insert(trs);if(e2){showErr(e2.message,btn);return;}}
-  // 饭堂评分
-  const crs=[];for(let k in canteenScores)if(canteenScores[k])crs.push({submission_id:sid,dimension:k,score:canteenScores[k]});
-  if(crs.length){const{error}=await sb.from("canteen_ratings").insert(crs);if(error){showErr(error.message,btn);return;}}
-  // 宿舍评分
-  const drs=[];for(let k in dormScores)if(dormScores[k])drs.push({submission_id:sid,dimension:k,score:dormScores[k]});
-  if(drs.length){const{error}=await sb.from("dormitory_ratings").insert(drs);if(error){showErr(error.message,btn);return;}}
-  // 汇总建议
-  const{data:teachers}=await sb.from("teachers").select("id,name").eq("class_id",selectedClass);
-  const nameMap={};(teachers||[]).forEach(t=>nameMap[t.id]=t.name);
+  const trs=[];for(let k in tScores)if(tScores[k]){const i=k.indexOf("_");trs.push({submission_id:sid,dimension:k.slice(i+1),score:tScores[k]});}
+  if(trs.length){const{error}=await sb.from("teacher_ratings").insert(trs);if(error){showErr("教师评分写入失败: "+error.message,btn);return;}}
+  // 饭堂
+  const crs=[];for(let k in cScores)if(cScores[k])crs.push({submission_id:sid,dimension:k,score:cScores[k]});
+  if(crs.length){const{error}=await sb.from("canteen_ratings").insert(crs);if(error){showErr("饭堂评分写入失败: "+error.message,btn);return;}}
+  // 宿舍
+  const drs=[];for(let k in dScores)if(dScores[k])drs.push({submission_id:sid,dimension:k,score:dScores[k]});
+  if(drs.length){const{error}=await sb.from("dormitory_ratings").insert(drs);if(error){showErr("宿舍评分写入失败: "+error.message,btn);return;}}
+  // 建议
+  const{data:teachers}=await sb.from("teachers").select("id,name").eq("class_id",clsId);
+  const nm={};(teachers||[]).forEach(t=>nm[t.id]=t.name);
   const parts=[];
-  for(let[tid,cmt]of Object.entries(teacherComments))if(cmt)parts.push(`[教师:${nameMap[tid]||tid}] ${cmt}`);
-  for(let[k,cmt]of Object.entries(canteenComments))if(cmt)parts.push(`[饭堂:${k}] ${cmt}`);
-  for(let[k,cmt]of Object.entries(dormComments))if(cmt)parts.push(`[宿舍:${k}] ${cmt}`);
-  const sugEl=document.getElementById("suggestion");const sug=sugEl?.value?.trim()||"";
-  if(sug)parts.push(`[综合] ${sug}`);
-  if(parts.length){const{error}=await sb.from("suggestions").insert({submission_id:sid,content:parts.join("\n")});if(error){showErr(error.message,btn);return;}}
-  localStorage.setItem("survey_submitted","1");
-  step=1;selectedClass=null;selectedTeacher=null;teacherScores={};teacherComments={};canteenScores={};canteenComments={};dormScores={};dormComments={};
+  for(let[tid,cmt]of Object.entries(tComments))if(cmt)parts.push(`[教师:${nm[tid]||tid}] ${cmt}`);
+  for(let[k,cmt]of Object.entries(cComments))if(cmt)parts.push(`[饭堂:${k}] ${cmt}`);
+  for(let[k,cmt]of Object.entries(dComments))if(cmt)parts.push(`[宿舍:${k}] ${cmt}`);
+  const gs=document.getElementById("genSug")?.value?.trim()||"";if(gs)parts.push(`[综合] ${gs}`);
+  if(parts.length){const{error}=await sb.from("suggestions").insert({submission_id:sid,content:parts.join("\n")});if(error){showErr("建议写入失败: "+error.message,btn);return;}}
+  localStorage.setItem("survey_done","1");
+  step=1;clsId=null;tchId=null;tScores={};tComments={};cScores={};cComments={};dScores={};dComments={};
   location.hash="done";
 }
+function showErr(msg,btn){const el=document.getElementById("subErr");if(el){el.textContent=msg;el.classList.add("show");}if(btn){btn.disabled=false;btn.textContent="确认提交";}}
+function renderDone(){document.getElementById("app").innerHTML=`<div class="card"><div class="success-box"><div class="check">✓</div><h2>提交成功！</h2><p class="section-desc">感谢你的宝贵评价，画室因你而更好</p></div></div>`;}
 
-function showErr(msg,btn){const el=document.getElementById("submit-err");if(el){el.textContent=msg;el.classList.remove("hidden");}if(btn){btn.disabled=false;btn.textContent="确认提交 ✓";}}
-
-function renderDone(){
-  document.getElementById("app").innerHTML=`<div class="card text-center"><div class="success-icon">&#10003;</div><h1>提交成功！</h1><p class="subtitle">感谢你的宝贵评价，画室因你而更好 ✨</p></div>`;
-}
-
-// ═══════════ 管理后台 ═══════════
+// ══════════ ADMIN ══════════
 function renderAdmin(){
-  document.getElementById("app").innerHTML=`<div class="login-box"><div class="login-header"><h1>🔐 管理后台</h1><p class="subtitle">画室满意度调查系统</p></div><div class="card">
-    <input id="adm-user" placeholder="用户名" value="admin" autocomplete="username"><input id="adm-pass" type="password" placeholder="密码" autocomplete="current-password">
-    <p class="error hidden mb-8" id="adm-err">用户名或密码错误</p><button class="btn btn-primary mt-8" onclick="adminLogin()">登录</button></div></div>`;
+  document.getElementById("app").innerHTML=`<div class="login-wrap"><div class="login-brand"><h1>画室调查</h1><p class="section-desc">管理后台</p></div><div class="card">
+    <input id="admU" placeholder="用户名" value="admin" autocomplete="username"><input id="admP" type="password" placeholder="密码" autocomplete="current-password">
+    <div class="err-msg mb-8" id="admErr">用户名或密码错误</div><button class="btn btn-primary mt-8" onclick="doLogin()">登录</button></div></div>`;
 }
-
-function adminLogin(){
-  const u=document.getElementById("adm-user").value,p=document.getElementById("adm-pass").value;
-  if(u===ADMIN_CRED.user&&p===ADMIN_CRED.pass){sessionStorage.setItem("admin_auth","1");location.hash="admin/dashboard";}
-  else document.getElementById("adm-err").classList.remove("hidden");
-}
-
+function doLogin(){const u=document.getElementById("admU").value,p=document.getElementById("admP").value;if(u===ADMIN.user&&p===ADMIN.pass){sessionStorage.setItem("admin","1");location.hash="dashboard";}else document.getElementById("admErr").classList.add("show");}
 async function renderDashboard(){
   if(!isAdmin()){location.hash="admin";return;}
-  document.getElementById("app").innerHTML=`<div class="nav"><h2>📊 管理后台</h2><a href="#" onclick="sessionStorage.removeItem('admin_auth');location.hash='admin'">退出登录</a></div>
-    <div class="tabs"><button class="tab active" onclick="switchTab('overview')">📈 概览</button><button class="tab" onclick="switchTab('teachers')">👨‍🏫 教师评分</button><button class="tab" onclick="switchTab('canteen')">🍽️ 饭堂评价</button><button class="tab" onclick="switchTab('dorm')">🏠 宿舍评价</button></div><div id="tab-content"></div>`;
-  switchTab("overview");
+  document.getElementById("app").innerHTML=`<div class="nav"><div class="brand"><span>画室</span>调查 · 后台</div><a href="#" onclick="sessionStorage.removeItem('admin');location.hash='admin'">退出</a></div>
+    <div class="tabs-bar"><button class="on" onclick="swTab('overview')">概览</button><button onclick="swTab('teachers')">教师评分</button><button onclick="swTab('canteen')">饭堂评价</button><button onclick="swTab('dorm')">宿舍评价</button></div><div id="tabBox"></div>`;
+  swTab("overview");
 }
 
-// 全局缓存
-let cache={suggestions:null,classes:null,teachers:null,allRatings:null,allSubs:null};
-async function ensureCache(){
-  if(cache.suggestions===null){
-    const[{data:s},{data:c},{data:t},{data:r},{data:sub}]=await Promise.all([
-      sb.from("suggestions").select("*").order("id",{ascending:false}),
-      sb.from("classes").select("id,name").order("display_order"),
-      sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher").order("class_id"),
-      sb.from("teacher_ratings").select("submission_id,dimension,score"),
-      sb.from("submissions").select("id,class_id,teacher_id,created_at")
-    ]);
-    cache.suggestions=s||[];cache.classes=c||[];cache.teachers=t||[];cache.allRatings=r||[];cache.allSubs=sub||[];
-  }
+// 通用数据加载（防重复）
+let cache={ts:0};
+function cacheValid(){return Date.now()-cache.ts<30000;} // 30秒内复用
+async function loadAll(force=false){
+  if(!force&&cacheValid()&&cache.classes)return;
+  const[{data:c},{data:t},{data:r},{data:sub},{data:sug},{count:total},{count:sugCnt}]=await Promise.all([
+    sb.from("classes").select("id,name").order("display_order"),
+    sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher").order("class_id"),
+    sb.from("teacher_ratings").select("submission_id,dimension,score"),
+    sb.from("submissions").select("id,class_id,teacher_id,created_at"),
+    sb.from("suggestions").select("*").order("id",{ascending:false}),
+    sb.from("submissions").select("*",{count:"exact",head:true}),
+    sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content","")
+  ]);
+  cache.classes=c||[];cache.teachers=t||[];cache.ratings=r||[];cache.subs=sub||[];cache.suggestions=sug||[];
+  cache.total=total||0;cache.sugCount=sugCnt||0;cache.ts=Date.now();
 }
-
-function parseSuggestions(cat){
-  // cat: '教师' | '饭堂' | '宿舍' | '综合'
-  return cache.suggestions.filter(s=>{
+function parseSugs(cat){
+  return (cache.suggestions||[]).filter(s=>{
     const lines=(s.content||"").split("\n");
     return lines.some(l=>l.startsWith(`[${cat}:`));
   }).map(s=>{
     const lines=(s.content||"").split("\n");
-    const rel=lines.filter(l=>l.startsWith(`[${cat}:`));
-    return {...s,parsed:rel};
+    return {...s,lines:lines.filter(l=>l.startsWith(`[${cat}:`))};
   });
 }
-
-async function switchTab(name){
-  await ensureCache();
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  event.target.classList.add("active");
-  const el=document.getElementById("tab-content");
-  if(name==="overview")await renderOverview(el);
-  else if(name==="teachers")await renderTeacherTab(el);
-  else if(name==="canteen")await renderRatingTab(el,"canteen_ratings","饭堂评价","饭堂");
-  else if(name==="dorm")await renderRatingTab(el,"dormitory_ratings","宿舍评价","宿舍");
+async function getMeta(sid){
+  const sub=(cache.subs||[]).find(s=>s.id===sid);if(!sub)return sid;
+  const cls=(cache.classes||[]).find(c=>c.id===sub.class_id);
+  let m=cls?cls.name:"";if(sub.teacher_id){const t=(cache.teachers||[]).find(t=>t.id===sub.teacher_id);m+=" · "+(t?t.name:"");}
+  m+=" · "+new Date(sub.created_at).toLocaleString("zh-CN");return m;
 }
 
-// ── 概览 ──
-async function renderOverview(el){
-  const[{count:total},{count:sugCount}]=await Promise.all([
-    sb.from("submissions").select("*",{count:"exact",head:true}),
-    sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content","")
-  ]);
-  let dimsHtml="";
-  DIMS.forEach(d=>{const sc=(cache.allRatings||[]).filter(r=>r.dimension===d).map(r=>r.score);dimsHtml+=`<tr><td>${d}</td><td><strong>${calcAvg(sc)}</strong></td><td>${sc.length}</td></tr>`;});
-  el.innerHTML=`<div class="stats-grid">
-    <div class="stat-card"><div class="stat-num">${total||0}</div><div class="stat-label">总提交</div></div>
-    <div class="stat-card"><div class="stat-num">${cache.classes.length}</div><div class="stat-label">班级</div></div>
-    <div class="stat-card"><div class="stat-num">${cache.teachers.length}</div><div class="stat-label">教师</div></div>
-    <div class="stat-card"><div class="stat-num">${sugCount||0}</div><div class="stat-label">建议</div></div>
-  </div>
-  <div class="card"><div class="section-header"><h2>📊 各维度平均分</h2></div>
-    <p class="fun-caption">整体教学评价一览，数据会说话</p>
-    <div class="table-wrap"><table><tr><th>维度</th><th>均分</th><th>人次</th></tr>${dimsHtml}</table></div></div>
-  <div class="card"><div class="section-header"><h2>💬 综合建议</h2><button class="btn-export" onclick="exportAll()">导出全部</button></div>`;
-  const general=parseSuggestions("综合");
-  if(!general.length)el.innerHTML+=`<p class="empty-state">暂无综合建议</p>`;
-  else for(let s of general){const meta=await getSubMeta(s.submission_id);el.innerHTML+=`<div class="suggestion-item"><div class="meta">${meta}</div><div class="content">${e(s.parsed.join("\n"))}</div></div>`;}
-  el.innerHTML+=`</div>`;
+async function swTab(name){
+  await loadAll();
+  document.querySelectorAll(".tabs-bar button").forEach(b=>b.classList.remove("on"));
+  event.target.classList.add("on");
+  const el=document.getElementById("tabBox");
+  if(name==="overview")renderOv(el);else if(name==="teachers")renderTch(el);
+  else if(name==="canteen")renderRt(el,"canteen_ratings","饭堂","🍽️");else renderRt(el,"dormitory_ratings","宿舍","🏠");
 }
 
-// ── 教师评分Tab ──
-let teacherClassFilter="";
-async function renderTeacherTab(el){
-  const classMap=Object.fromEntries(cache.classes.map(c=>[c.id,c.name]));
+// 概览
+async function renderOv(el){
+  let dimRows="";
+  DIMS.forEach(d=>{const sc=(cache.ratings||[]).filter(r=>r.dimension===d).map(r=>r.score);dimRows+=`<tr><td>${d}</td><td><b>${avg(sc)}</b></td><td>${sc.length}</td></tr>`;});
+  let h=`<div class="grid-4">
+    <div class="kpi blue"><div class="num">${cache.total}</div><div class="lbl">总提交</div></div>
+    <div class="kpi green"><div class="num">${cache.classes.length}</div><div class="lbl">班级数</div></div>
+    <div class="kpi orange"><div class="num">${cache.teachers.length}</div><div class="lbl">教师数</div></div>
+    <div class="kpi purple"><div class="num">${cache.sugCount}</div><div class="lbl">建议数</div></div></div>
+  <div class="card"><div class="panel-header"><div class="section-title"><span class="icon">📊</span>各维度平均分</div><button class="btn-export" onclick="expAll()">导出全部</button></div>
+    <div class="table-wrap"><table><tr><th>维度</th><th>均分</th><th>评价人次</th></tr>${dimRows}</table></div>
+    ${renderSugBlock("综合","💬 综合建议")}</div>`;
+  el.innerHTML=h;
+}
+
+// 教师评分
+let tFilter="";
+async function renderTch(el){
+  loadAll(true); // 强制刷新
+  const clsMap=Object.fromEntries(cache.classes.map(c=>[c.id,c.name]));
   let opts='<option value="">全部班级</option>';
-  cache.classes.forEach(c=>opts+=`<option value="${c.id}" ${teacherClassFilter==c.id?'selected':''}>${c.name}</option>`);
-  const filtered=teacherClassFilter?cache.teachers.filter(t=>t.class_id==teacherClassFilter):cache.teachers;
-  const subMap={};(cache.allSubs||[]).forEach(s=>{if(!subMap[s.teacher_id])subMap[s.teacher_id]=[];subMap[s.teacher_id].push(s.id);});
-  let html=`<div class="card"><div class="section-header"><h2>👨‍🏫 教师评分详情</h2><button class="btn-export" onclick="exportTeachers()">导出教师数据</button></div>
-    <p class="fun-caption">每个老师都是一颗星，看看谁最亮</p>
-    <select class="select-sm mb-16" onchange="filterTeachers(this.value)">${opts}</select>
+  cache.classes.forEach(c=>opts+=`<option value="${c.id}" ${tFilter==c.id?'selected':''}>${c.name}</option>`);
+  const filtered=tFilter?cache.teachers.filter(t=>t.class_id==tFilter):cache.teachers;
+  const sm={};(cache.subs||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});
+  let h=`<div class="card"><div class="panel-header"><div class="section-title"><span class="icon">👨‍🏫</span>教师评分详情</div><button class="btn-export" onclick="expTch()">导出教师数据</button></div>
+    <select class="select-sm mb-16" onchange="filtTch(this.value)">${opts}</select>
     <div class="table-wrap"><table><tr><th>班级</th><th>教师</th><th>人次</th>`;
-  DIMS.forEach(d=>html+=`<th>${d}</th>`);html+='<th>均分</th></tr>';
+  DIMS.forEach(d=>h+=`<th>${d}</th>`);h+='<th>均分</th></tr>';
   for(let t of filtered){
-    const subIds=subMap[t.id]||[];
-    html+=`<tr><td>${classMap[t.class_id]||""}</td><td>${t.name}</td><td>${subIds.length}</td>`;
-    let allScores=[];
-    DIMS.forEach(d=>{
-      const scores=(cache.allRatings||[]).filter(r=>r.dimension===d&&subIds.includes(r.submission_id)).map(r=>r.score);
-      html+=`<td>${calcAvg(scores)}</td>`;allScores.push(...scores);
-    });
-    html+=`<td><strong>${calcAvg(allScores)}</strong></td></tr>`;
+    const sids=sm[t.id]||[];
+    h+=`<tr><td>${clsMap[t.class_id]||""}</td><td>${t.name}</td><td>${sids.length}</td>`;
+    let all=[];DIMS.forEach(d=>{const sc=(cache.ratings||[]).filter(r=>r.dimension===d&&sids.includes(r.submission_id)).map(r=>r.score);h+=`<td>${avg(sc)}</td>`;all.push(...sc);});
+    h+=`<td><b>${avg(all)}</b></td></tr>`;
   }
-  html+='</table></div>';
-
-  // 教师评价中的建议（内嵌）
-  const tSugs=parseSuggestions("教师");
-  if(tSugs.length){
-    html+=`<div class="suggestion-block"><h3>📝 学生对教师的建议（${tSugs.length} 条）</h3>`;
-    for(let s of tSugs){const meta=await getSubMeta(s.submission_id);html+=`<div class="suggestion-item"><div class="meta">${meta}</div><div class="content">${e(s.parsed.join("\n"))}</div></div>`;}
-    html+=`</div>`;
-  }
-  html+=`</div>`;el.innerHTML=html;
+  h+=`</table></div>${renderSugBlock("教师","📝 学生对教师的建议")}</div>`;el.innerHTML=h;
 }
+async function filtTch(v){tFilter=v;await loadAll(true);renderTch(document.getElementById("tabBox"));}
 
-async function filterTeachers(classId){
-  teacherClassFilter=classId;
-  await renderTeacherTab(document.getElementById("tab-content"));
-}
-
-// ── 饭堂/宿舍Tab ──
-async function renderRatingTab(el,table,title,cat){
-  const{data}=await sb.from(table).select("dimension,score");
-  const grouped={};(data||[]).forEach(r=>{if(!grouped[r.dimension])grouped[r.dimension]=[];grouped[r.dimension].push(r.score);});
-  const icon=cat==="饭堂"?"🍽️":"🏠";
-  let html=`<div class="card"><div class="section-header"><h2>${icon} ${title}</h2><button class="btn-export" onclick="exportRating('${table}','${title}','${cat}')">导出${title}</button></div>
-    <p class="fun-caption">${cat==="饭堂"?"干饭人的真实评价，不吹不黑":"宿舍是第二个家，来看看住得怎么样"}</p>
-    <div class="table-wrap"><table><tr><th>维度</th><th>均分</th><th>人次</th></tr>`;
-  for(let k in grouped)html+=`<tr><td>${k}</td><td><strong>${calcAvg(grouped[k])}</strong></td><td>${grouped[k].length}</td></tr>`;
-  html+='</table></div>';
-  // 相关建议
-  const rSugs=parseSuggestions(cat);
-  if(rSugs.length){
-    html+=`<div class="suggestion-block"><h3>📝 ${cat}相关建议（${rSugs.length} 条）</h3>`;
-    for(let s of rSugs){const meta=await getSubMeta(s.submission_id);html+=`<div class="suggestion-item"><div class="meta">${meta}</div><div class="content">${e(s.parsed.join("\n"))}</div></div>`;}
-    html+=`</div>`;
-  }
-  html+=`</div>`;el.innerHTML=html;
-}
-
-// ── 辅助函数 ──
-function e(str){return (str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-async function getSubMeta(sid){
-  const sub=cache.allSubs.find(s=>s.id===sid);
-  if(!sub)return sid;
-  const cls=cache.classes.find(c=>c.id===sub.class_id);
-  let meta=(cls?cls.name:"")||"";
-  if(sub.teacher_id){const t=cache.teachers.find(t=>t.id===sub.teacher_id);meta+=" · "+(t?t.name:"未知教师");}
-  meta+=" · "+new Date(sub.created_at).toLocaleString("zh-CN");
-  return meta;
-}
-
-// ── 导出功能 ──
-async function exportTeachers(){
-  const classMap=Object.fromEntries(cache.classes.map(c=>[c.id,c.name]));
-  const subMap={};(cache.allSubs||[]).forEach(s=>{if(!subMap[s.teacher_id])subMap[s.teacher_id]=[];subMap[s.teacher_id].push(s.id);});
-  const rows=[["班级","教师","科目","班主任","评价人数",...DIMS,"综合均分"]];
-  for(let t of cache.teachers){
-    const subIds=subMap[t.id]||[];
-    const row=[classMap[t.class_id]||"",t.name,t.subjects,t.is_head_teacher?"是":"否",subIds.length];
-    let allScores=[];
-    DIMS.forEach(d=>{const scores=(cache.allRatings||[]).filter(r=>r.dimension===d&&subIds.includes(r.submission_id)).map(r=>r.score);row.push(calcAvg(scores));allScores.push(...scores);});
-    row.push(calcAvg(allScores));rows.push(row);
-  }
-  // 追加教师建议
-  rows.push([],["— 教师评价中的建议 —"]);
-  const tSugs=parseSuggestions("教师");
-  tSugs.forEach(s=>rows.push([s.submission_id,s.parsed.join(" | ")]));
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),"教师评价");
-  XLSX.writeFile(wb,`画室_教师评价_${ts()}.xlsx`);
-}
-
-async function exportRating(table,title,cat){
+// 饭堂/宿舍
+async function renderRt(el,table,title,icon){
+  loadAll(true); // 强制刷新
   const{data}=await sb.from(table).select("dimension,score");
   const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
-  const rows=[["维度","均分","人次"]];for(let k in g)rows.push([k,calcAvg(g[k]),g[k].length]);
+  let rows="";for(let k in g)rows+=`<tr><td>${k}</td><td><b>${avg(g[k])}</b></td><td>${g[k].length}</td></tr>`;
+  el.innerHTML=`<div class="card"><div class="panel-header"><div class="section-title"><span class="icon">${icon}</span>${title}</div><button class="btn-export" onclick="expRt('${table}','${title}','${title.slice(0,2)}')">导出${title}</button></div>
+    <div class="table-wrap"><table><tr><th>维度</th><th>均分</th><th>评价人次</th></tr>${rows}</table></div>
+    ${renderSugBlock(title.slice(0,2),`📝 ${title}相关建议`)}</div>`;
+}
+
+// 建议块渲染
+function renderSugBlock(cat,title){
+  const sugs=parseSugs(cat);
+  if(!sugs.length)return `<div class="empty">暂无${title.replace(/[📝💬\s]/g,"")}</div>`;
+  let h=`<div class="suggestion-list"><h4>${title}（${sugs.length}条）</h4>`;
+  sugs.forEach(s=>{h+=`<div class="suggestion-item"><div class="sug-meta">${getMetaSync(s.submission_id)}</div><div class="sug-body">${esc(s.lines.join("\n"))}</div></div>`;});
+  return h+`</div>`;
+}
+function getMetaSync(sid){
+  const sub=(cache.subs||[]).find(s=>s.id===sid);if(!sub)return sid;
+  const cls=(cache.classes||[]).find(c=>c.id===sub.class_id);
+  let m=cls?cls.name:"";if(sub.teacher_id){const t=(cache.teachers||[]).find(t=>t.id===sub.teacher_id);m+=" · "+(t?t.name:"");}
+  return m+" · "+new Date(sub.created_at).toLocaleString("zh-CN");
+}
+
+// 导出
+async function expTch(){
+  await loadAll();
+  const clsMap=Object.fromEntries(cache.classes.map(c=>[c.id,c.name]));
+  const sm={};(cache.subs||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});
+  const rows=[["班级","教师","科目","班主任","评价人数",...DIMS,"综合均分"]];
+  for(let t of cache.teachers){
+    const sids=sm[t.id]||[];const row=[clsMap[t.class_id]||"",t.name,t.subjects,t.is_head_teacher?"是":"否",sids.length];
+    let all=[];DIMS.forEach(d=>{const sc=(cache.ratings||[]).filter(r=>r.dimension===d&&sids.includes(r.submission_id)).map(r=>r.score);row.push(avg(sc));all.push(...sc);});row.push(avg(all));rows.push(row);
+  }
+  rows.push([],["— 教师建议 —"]);
+  parseSugs("教师").forEach(s=>rows.push([s.submission_id,s.lines.join(" | ")]));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),"教师评价");
+  XLSX.writeFile(wb,`画室_教师评价_${ts()}.xlsx`);
+}
+async function expRt(table,title,cat){
+  const{data}=await sb.from(table).select("dimension,score");
+  const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
+  const rows=[["维度","均分","人次"]];for(let k in g)rows.push([k,avg(g[k]),g[k].length]);
   rows.push([],["— 相关建议 —"]);
-  const rSugs=parseSuggestions(cat);
-  rSugs.forEach(s=>rows.push([s.submission_id,s.parsed.join(" | ")]));
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),title);
+  parseSugs(cat).forEach(s=>rows.push([s.submission_id,s.lines.join(" | ")]));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),title);
   XLSX.writeFile(wb,`画室_${title}_${ts()}.xlsx`);
 }
-
-async function exportAll(){
+async function expAll(){
+  await loadAll();
   const wb=XLSX.utils.book_new();
-  // 教师
-  const classMap=Object.fromEntries(cache.classes.map(c=>[c.id,c.name]));
-  const subMap={};(cache.allSubs||[]).forEach(s=>{if(!subMap[s.teacher_id])subMap[s.teacher_id]=[];subMap[s.teacher_id].push(s.id);});
-  const tRows=[["班级","教师","科目","班主任","评价人数",...DIMS,"综合均分"]];
-  for(let t of cache.teachers){
-    const subIds=subMap[t.id]||[];
-    const row=[classMap[t.class_id]||"",t.name,t.subjects,t.is_head_teacher?"是":"否",subIds.length];
-    let allScores=[];DIMS.forEach(d=>{const s=(cache.allRatings||[]).filter(r=>r.dimension===d&&subIds.includes(r.submission_id)).map(r=>r.score);row.push(calcAvg(s));allScores.push(...s);});row.push(calcAvg(allScores));tRows.push(row);
-  }
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tRows),"教师评价");
-  for(let[tbl,title]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){
+  const clsMap=Object.fromEntries(cache.classes.map(c=>[c.id,c.name]));
+  const sm={};(cache.subs||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});
+  const tr=[["班级","教师","科目","班主任","评价人数",...DIMS,"综合均分"]];
+  for(let t of cache.teachers){const sids=sm[t.id]||[];const row=[clsMap[t.class_id]||"",t.name,t.subjects,t.is_head_teacher?"是":"否",sids.length];let all=[];DIMS.forEach(d=>{const sc=(cache.ratings||[]).filter(r=>r.dimension===d&&sids.includes(r.submission_id)).map(r=>r.score);row.push(avg(sc));all.push(...sc);});row.push(avg(all));tr.push(row);}
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");
+  for(let[tbl,ttl]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){
     const{data}=await sb.from(tbl).select("dimension,score");
     const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,calcAvg(v),v.length])]),title);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,avg(v),v.length])]),ttl);
   }
-  const sRows=[["提交ID","建议内容"]];cache.suggestions.forEach(s=>sRows.push([s.submission_id,s.content]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sRows),"建议");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(cache.suggestions||[]).map(s=>[s.submission_id,s.content])]),"建议");
   XLSX.writeFile(wb,`画室满意度调查_${ts()}.xlsx`);
 }
-
-function ts(){return new Date().toISOString().slice(0,10);}
 
 window.addEventListener("hashchange",route);route();
 </script>
