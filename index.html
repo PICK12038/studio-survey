@@ -2,87 +2,129 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>画室满意度调查</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18/dist/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;min-height:100vh}
-.container{max-width:680px;margin:0 auto;padding:24px 16px}
-.card{background:#fff;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-h1{font-size:22px;margin-bottom:8px;color:#1a1a1a}
-h2{font-size:16px;margin-bottom:16px;color:#333}
-.subtitle{color:#888;font-size:13px;margin-bottom:20px}
-label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;color:#333}
-select{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;background:#fff;appearance:none;cursor:pointer}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;min-height:100vh;color:#1a1a1a;line-height:1.5}
+.container{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+.card{background:#fff;border-radius:12px;padding:20px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+h1{font-size:20px;margin-bottom:6px}
+h2{font-size:15px;margin-bottom:14px;color:#333}
+.subtitle{color:#999;font-size:12px;margin-bottom:16px}
+select{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;background:#fff;appearance:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 select:focus{border-color:#2563eb;outline:none}
-.score-group{margin:16px 0}
-.score-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0}
-.score-row .dim-label{font-size:14px;color:#333;flex:1}
-.score-btns{display:flex;gap:4px}
-.score-btn{width:34px;height:34px;border:1.5px solid #ddd;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;transition:all .15s;color:#555}
+.score-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:8px}
+.score-row .dim-label{font-size:14px;color:#333;flex:1;min-width:0;word-break:break-all}
+.score-btns{display:flex;gap:4px;flex-shrink:0}
+.score-btn{min-width:32px;height:32px;padding:0 4px;border:1.5px solid #ddd;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;transition:all .12s;color:#555;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+.score-btn:active{transform:scale(.95)}
 .score-btn:hover{border-color:#2563eb;color:#2563eb}
-.score-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
-.teacher-card{border:1.5px solid #eee;border-radius:10px;padding:16px;margin-bottom:12px}
+.score-btn.active{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:600}
+.teacher-card{border:1.5px solid #eee;border-radius:10px;padding:14px;margin-bottom:10px;transition:border-color .15s}
 .teacher-card.selected{border-color:#2563eb;background:#f8faff}
-.teacher-card .tc-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.teacher-card .tc-header{display:flex;align-items:center;gap:6px;margin-bottom:12px;cursor:pointer}
 .teacher-card .tc-name{font-weight:600;font-size:15px}
-.teacher-card .tc-subjects{font-size:12px;color:#888}
-.badge{font-size:11px;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#b45309}
-textarea{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;min-height:80px}
+.teacher-card .tc-subjects{font-size:11px;color:#888}
+.badge{font-size:10px;padding:2px 7px;border-radius:10px;background:#fef3c7;color:#b45309;flex-shrink:0}
+textarea{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit}
 textarea:focus{border-color:#2563eb;outline:none}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+.btn:active{transform:scale(.98)}
 .btn-primary{background:#2563eb;color:#fff;width:100%}
 .btn-primary:hover{background:#1d4ed8}
 .btn-primary:disabled{background:#93a3c8;cursor:not-allowed}
 .btn-outline{background:#fff;color:#2563eb;border:1.5px solid #2563eb}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:8px 0 16px}
 .nav a{color:#2563eb;text-decoration:none;font-size:13px}
-.step-indicator{display:flex;gap:8px;margin-bottom:24px}
-.step{flex:1;text-align:center;padding:8px;border-radius:8px;background:#eee;font-size:12px;color:#999;transition:all .2s}
+.step-indicator{display:flex;gap:6px;margin-bottom:20px}
+.step{flex:1;text-align:center;padding:8px 4px;border-radius:8px;background:#eee;font-size:11px;color:#999;transition:all .2s}
 .step.active{background:#dbeafe;color:#2563eb;font-weight:600}
 .step.done{background:#dcfce7;color:#16a34a}
 .success-icon{font-size:48px;text-align:center;margin:16px 0;color:#16a34a}
 .text-center{text-align:center}
+.mt-8{margin-top:8px}
 .mt-16{margin-top:16px}
 .mt-24{margin-top:24px}
 .mb-8{margin-bottom:8px}
 .mb-16{margin-bottom:16px}
-.error{color:#dc2626;font-size:13px;margin-top:4px}
-.login-box{max-width:380px;margin:80px auto}
-.login-box input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:12px}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:#f8fafc;border-radius:10px;padding:16px;text-align:center}
-.stat-card .stat-num{font-size:28px;font-weight:700;color:#2563eb}
-.stat-card .stat-label{font-size:12px;color:#888;margin-top:4px}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #eee}
-th{background:#f8fafc;font-weight:600;color:#555;font-size:12px}
-.chart-wrap{max-width:100%;margin:16px 0}
+.error{color:#dc2626;font-size:12px;margin-top:4px}
+.login-box{max-width:360px;margin:60px auto}
+.login-box input{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:12px}
+.login-box input:focus{border-color:#2563eb;outline:none}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:#f8fafc;border-radius:10px;padding:14px;text-align:center}
+.stat-card .stat-num{font-size:26px;font-weight:700;color:#2563eb}
+.stat-card .stat-label{font-size:11px;color:#888;margin-top:2px}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+th,td{padding:8px;text-align:left;border-bottom:1px solid #eee}
+th{background:#f8fafc;font-weight:600;color:#555;font-size:12px;position:sticky;top:0}
 .suggestion-item{padding:12px 0;border-bottom:1px solid #f0f0f0}
-.suggestion-item .meta{font-size:12px;color:#888;margin-bottom:4px}
-.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;background:#f0f2f5;border:none;transition:all .15s}
+.suggestion-item .meta{font-size:11px;color:#888;margin-bottom:4px}
+.tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.tab{padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:#f0f2f5;border:none;transition:all .15s;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .tab.active{background:#2563eb;color:#fff}
 .hidden{display:none}
-@media(max-width:480px){.stats-grid{grid-template-columns:1fr}.score-btns{gap:2px}.score-btn{width:30px;height:30px;font-size:12px}}
+.admin-link{color:#aaa;font-size:11px;text-decoration:none;padding:8px}
+.admin-link:hover{color:#2563eb}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1}
+
+@media (min-width:641px){
+  .container{padding:24px 24px 48px}
+  .card{padding:24px}
+  h1{font-size:24px}
+  .subtitle{font-size:14px;margin-bottom:24px}
+  .step{font-size:13px}
+  .score-btn{min-width:36px;height:36px;font-size:14px}
+  .teacher-card{padding:18px}
+  .score-row{padding:12px 0}
+  .score-row .dim-label{font-size:15px}
+  .stat-card{padding:20px}
+  .stat-card .stat-num{font-size:32px}
+  .stat-card .stat-label{font-size:13px}
+}
+
+@media (max-width:640px){
+  .score-btn{min-width:28px;height:28px;font-size:12px;border-radius:5px}
+  .score-row .dim-label{font-size:13px}
+  .score-btns{gap:2px}
+  .teacher-card{padding:12px}
+  .teacher-card .tc-name{font-size:14px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media (max-width:400px){
+  .container{padding:12px 10px 32px}
+  .card{padding:14px 12px;border-radius:10px}
+  h1{font-size:18px}
+  .score-btn{min-width:26px;height:26px;font-size:11px;border-radius:4px}
+  .score-btns{gap:1px}
+  .step{font-size:10px;padding:6px 2px}
+  .teacher-card .tc-name{font-size:13px}
+  .stats-grid{grid-template-columns:1fr}
+  .score-row{gap:4px;padding:8px 0}
+  .score-row .dim-label{font-size:12px}
+  select{font-size:14px;padding:10px}
+}
 </style>
 </head>
 <body>
 <div class="container" id="app"></div>
 
 <script>
-// ─── Config ─────────────────────────────────
 const SUPABASE_URL = "https://iemiujgdblsuvzsvirju.supabase.co";
 const SUPABASE_KEY = "sb_publishable_LCj2enxyQTWRIzXZ7LPaFA_doIwMzCx";
 const ADMIN_CRED = { user: "admin", pass: "admin123" };
-const DIMS = ["素描静物","素描头像","色彩","速写","讲课","辅导","作业点评"];
+const DIMS = ["教学态度","课堂讲解","示范教学","课后辅导","作业点评"];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ─── Router ─────────────────────────────────
 function route() {
   const hash = location.hash.slice(1) || "survey";
   const app = document.getElementById("app");
@@ -94,7 +136,6 @@ function route() {
   else renderSurvey(app);
 }
 
-// ─── Survey Page ────────────────────────────
 let step = 1;
 let selectedClass = null;
 let selectedTeacher = null;
@@ -104,20 +145,15 @@ let dormScores = {};
 
 async function renderSurvey(app) {
   const { data: classes } = await sb.from("classes").select("*").order("display_order");
-
-  app.innerHTML = `
-    <h1>画室满意度调查</h1>
-    <p class="subtitle">请对您的学习体验进行评价（1-10分）</p>
+  app.innerHTML = `<h1>画室满意度调查</h1><p class="subtitle">请对您的学习体验进行评价（1-10分）</p>
     <div class="step-indicator">
-      <div class="step ${step===1?'active':step>1?'done':''}">1. 选择班级</div>
-      <div class="step ${step===2?'active':step>2?'done':''}">2. 评价教师</div>
-      <div class="step ${step===3?'active':step>3?'done':''}">3. 饭堂宿舍</div>
-      <div class="step ${step===4?'active':step>4?'done':''}">4. 提交</div>
+      <div class="step ${step===1?'active':step>1?'done':''}">选择班级</div>
+      <div class="step ${step===2?'active':step>2?'done':''}">评价教师</div>
+      <div class="step ${step===3?'active':step>3?'done':''}">饭堂宿舍</div>
+      <div class="step ${step===4?'active':step>4?'done':''}">确认提交</div>
     </div>
     <div id="step-content"></div>
-    <p class="text-center mt-24"><a href="#admin" style="color:#999;font-size:12px;text-decoration:none">管理后台</a></p>
-  `;
-
+    <p class="text-center mt-24"><a href="#admin" class="admin-link">管理后台</a></p>`;
   const content = document.getElementById("step-content");
   if (step === 1) renderStep1(content, classes);
   else if (step === 2) renderStep2(content);
@@ -134,8 +170,7 @@ function renderStep1(el, classes) {
 function nextStep1() {
   const sel = document.getElementById("class-select").value;
   if (!sel) { document.getElementById("class-err").classList.remove("hidden"); return; }
-  selectedClass = sel;
-  step = 2; route();
+  selectedClass = sel; step = 2; route();
 }
 
 async function renderStep2(el) {
@@ -146,34 +181,36 @@ async function renderStep2(el) {
     html += `<div class="teacher-card${sel}" id="tc-${t.id}">
       <div class="tc-header" onclick="selectTeacher(${t.id})">
         <span class="tc-name">${t.name}</span>
-        <span class="tc-subjects">${t.subjects}</span>
+        ${t.subjects ? `<span class="tc-subjects">${t.subjects}</span>` : ''}
         ${t.is_head_teacher?'<span class="badge">班主任</span>':''}
       </div>`;
     DIMS.forEach(d => {
       const v = teacherScores[t.id+"_"+d] || "";
-      html += `<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;
+      html += `<div class="score-row" data-tid="${t.id}" data-dim="${d}"><span class="dim-label">${d}</span><div class="score-btns">`;
       for (let i=1; i<=10; i++) {
-        html += `<button class="score-btn ${v==i?'active':''}" onclick="setTeacherScore(${t.id},'${d}',${i})">${i}</button>`;
+        html += `<button class="score-btn ${v==i?'active':''}" data-score="${i}" onclick="setTeacherScore(${t.id},'${d}',${i},this)">${i}</button>`;
       }
       html += `</div></div>`;
     });
     html += `</div>`;
   });
-  html += `<p class="error hidden mt-16" id="teacher-err">请至少选择一位教师并评分</p>
-    <button class="btn btn-outline mt-16" onclick="step=1;route()">上一步</button>
-    <button class="btn btn-primary mt-16" onclick="nextStep2()">下一步</button></div>`;
+  html += `<p class="error hidden mt-16" id="teacher-err">请至少为一位教师评分</p>
+    <div class="btn-row mt-16"><button class="btn btn-outline" onclick="step=1;route()">上一步</button><button class="btn btn-primary" onclick="nextStep2()">下一步</button></div></div>`;
   el.innerHTML = html;
 }
 
 function selectTeacher(tid) {
   if (selectedTeacher === tid) { selectedTeacher = null; }
   else { selectedTeacher = tid; }
-  step = 2; route();
+  document.querySelectorAll('.teacher-card').forEach(tc => {
+    tc.classList.toggle('selected', tc.id === 'tc-'+selectedTeacher);
+  });
 }
 
-function setTeacherScore(tid, dim, score) {
+function setTeacherScore(tid, dim, score, btn) {
   teacherScores[tid+"_"+dim] = score;
-  step = 2; route();
+  const row = btn.closest('.score-row');
+  if (row) row.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.score == score));
 }
 
 function nextStep2() {
@@ -184,98 +221,66 @@ function nextStep2() {
 }
 
 function renderStep3(el) {
-  el.innerHTML = `<div class="card">
-    <h2>饭堂评价</h2>
+  el.innerHTML = `<div class="card"><h2>饭堂评价</h2>
     ${renderScoreGroup("canteen","饭菜口味",canteenScores)}
     ${renderScoreGroup("canteen","服务态度",canteenScores)}
   </div>
-  <div class="card">
-    <h2>宿舍评价</h2>
+  <div class="card"><h2>宿舍评价</h2>
     ${renderScoreGroup("dorm","宿舍管理",dormScores)}
     ${renderScoreGroup("dorm","宿管服务",dormScores)}
   </div>
-  <div class="card">
-    <h2>个人建议</h2>
+  <div class="card"><h2>个人建议</h2>
     <textarea id="suggestion" placeholder="请留下您的宝贵建议（选填）"></textarea>
   </div>
-  <button class="btn btn-outline mb-16" onclick="step=2;route()">上一步</button>
-  <button class="btn btn-primary" onclick="nextStep3()">下一步</button>`;
+  <div class="btn-row mb-16"><button class="btn btn-outline" onclick="step=2;route()">上一步</button><button class="btn btn-primary" onclick="nextStep3()">下一步</button></div>`;
 }
 
 function renderScoreGroup(prefix, label, store) {
   const v = store[label] || "";
-  let html = `<div class="score-row"><span class="dim-label">${label}</span><div class="score-btns">`;
+  let html = `<div class="score-row" data-group="${prefix}" data-label="${label}"><span class="dim-label">${label}</span><div class="score-btns">`;
   for (let i=1; i<=10; i++) {
-    html += `<button class="score-btn ${v==i?'active':''}" onclick="setScore('${prefix}','${label}',${i})">${i}</button>`;
+    html += `<button class="score-btn ${v==i?'active':''}" data-score="${i}" onclick="setGroupScore('${prefix}','${label}',${i},this)">${i}</button>`;
   }
   html += `</div></div>`;
   return html;
 }
 
-function setScore(prefix, label, score) {
+function setGroupScore(prefix, label, score, btn) {
   if (prefix === "canteen") canteenScores[label] = score;
   else dormScores[label] = score;
-  step = 3; route();
+  const row = btn.closest('.score-row');
+  if (row) row.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.score == score));
 }
 
 function nextStep3() { step = 4; route(); }
 
 async function renderStep4(el) {
   const { data: cls } = await sb.from("classes").select("name").eq("id", selectedClass).single();
-  const { data: tch } = selectedTeacher ? (await sb.from("teachers").select("name").eq("id", selectedClass).eq("id", selectedTeacher).single()) : {data:null};
-
+  const { data: tch } = selectedTeacher ? (await sb.from("teachers").select("name").eq("class_id", selectedClass).eq("id", selectedTeacher).single()) : {data:null};
   let summary = `<p><strong>班级：</strong>${cls.name}</p>`;
-  if (tch) summary += `<p><strong>评价教师：</strong>${tch.name}</p>`;
-  summary += `<p><strong>评分数：</strong>${Object.values(teacherScores).filter(Boolean).length} 项</p>`;
-
-  el.innerHTML = `<div class="card text-center">
-    <h2>确认提交</h2>
+  if (tch) summary += `<p><strong>主评教师：</strong>${tch.name}</p>`;
+  summary += `<p><strong>已评分：</strong>${Object.values(teacherScores).filter(Boolean).length} 项</p>`;
+  el.innerHTML = `<div class="card text-center"><h2>确认提交</h2>
     <div style="text-align:left;margin:16px 0;font-size:14px;line-height:2">${summary}</div>
-    <button class="btn btn-outline mb-16" onclick="step=3;route()">返回修改</button>
-    <button class="btn btn-primary" id="submit-btn" onclick="doSubmit()">确认提交</button>
-    <p class="error hidden mt-8" id="submit-err"></p>
-  </div>`;
+    <div class="btn-row mb-16"><button class="btn btn-outline" onclick="step=3;route()">返回修改</button><button class="btn btn-primary" id="submit-btn" onclick="doSubmit()">确认提交</button></div>
+    <p class="error hidden mt-8" id="submit-err"></p></div>`;
 }
 
 async function doSubmit() {
   const btn = document.getElementById("submit-btn");
   btn.disabled = true; btn.textContent = "提交中...";
-
   const sid = crypto.randomUUID ? crypto.randomUUID().slice(0,12) : Math.random().toString(36).slice(2,14);
-
   const { error: e1 } = await sb.from("submissions").insert({ id: sid, class_id: Number(selectedClass), teacher_id: selectedTeacher ? Number(selectedTeacher) : null });
   if (e1) { showErr(e1.message, btn); return; }
-
-  // teacher ratings
   const trs = [];
-  for (let k in teacherScores) {
-    if (!teacherScores[k]) continue;
-    const [tid, dim] = k.split("_");
-    trs.push({ submission_id: sid, dimension: dim, score: teacherScores[k] });
-  }
-  if (trs.length) {
-    const { error: e2 } = await sb.from("teacher_ratings").insert(trs);
-    if (e2) { showErr(e2.message, btn); return; }
-  }
-
-  // canteen
-  const crs = [];
-  for (let k in canteenScores) { if (canteenScores[k]) crs.push({ submission_id: sid, dimension: k, score: canteenScores[k] }); }
+  for (let k in teacherScores) { if (!teacherScores[k]) continue; const [tid, dim] = k.split("_"); trs.push({ submission_id: sid, dimension: dim, score: teacherScores[k] }); }
+  if (trs.length) { const { error: e2 } = await sb.from("teacher_ratings").insert(trs); if (e2) { showErr(e2.message, btn); return; } }
+  const crs = []; for (let k in canteenScores) { if (canteenScores[k]) crs.push({ submission_id: sid, dimension: k, score: canteenScores[k] }); }
   if (crs.length) { const { error } = await sb.from("canteen_ratings").insert(crs); if (error) { showErr(error.message, btn); return; } }
-
-  // dorm
-  const drs = [];
-  for (let k in dormScores) { if (dormScores[k]) drs.push({ submission_id: sid, dimension: k, score: dormScores[k] }); }
+  const drs = []; for (let k in dormScores) { if (dormScores[k]) drs.push({ submission_id: sid, dimension: k, score: dormScores[k] }); }
   if (drs.length) { const { error } = await sb.from("dormitory_ratings").insert(drs); if (error) { showErr(error.message, btn); return; } }
-
-  // suggestion
   const sug = document.getElementById("suggestion")?.value?.trim();
-  if (sug) {
-    const { error } = await sb.from("suggestions").insert({ submission_id: sid, content: sug });
-    if (error) { showErr(error.message, btn); return; }
-  }
-
-  // reset & go
+  if (sug) { const { error } = await sb.from("suggestions").insert({ submission_id: sid, content: sug }); if (error) { showErr(error.message, btn); return; } }
   step=1; selectedClass=null; selectedTeacher=null; teacherScores={}; canteenScores={}; dormScores={};
   location.hash = "done";
 }
@@ -287,52 +292,35 @@ function showErr(msg, btn) {
 }
 
 function renderDone(app) {
-  app.innerHTML = `<div class="card text-center">
-    <div class="success-icon">&#10003;</div>
-    <h1>提交成功</h1>
-    <p class="subtitle">感谢您的宝贵评价！</p>
-    <button class="btn btn-primary mt-24" onclick="location.hash='survey'">再填一份</button>
-  </div>`;
+  app.innerHTML = `<div class="card text-center"><div class="success-icon">&#10003;</div><h1>提交成功</h1><p class="subtitle">感谢您的宝贵评价！</p><button class="btn btn-primary mt-24" onclick="location.hash='survey'">再填一份</button></div>`;
 }
 
-// ─── Admin ──────────────────────────────────
 function renderAdmin(app) {
-  app.innerHTML = `<div class="login-box card">
-    <h2 class="text-center mb-16">管理员登录</h2>
-    <input id="adm-user" placeholder="用户名" value="admin">
-    <input id="adm-pass" type="password" placeholder="密码">
+  app.innerHTML = `<div class="login-box card"><h2 class="text-center mb-16">管理员登录</h2>
+    <input id="adm-user" placeholder="用户名" value="admin" autocomplete="username">
+    <input id="adm-pass" type="password" placeholder="密码" autocomplete="current-password">
     <p class="error hidden mb-8" id="adm-err">用户名或密码错误</p>
-    <button class="btn btn-primary" onclick="adminLogin()">登录</button>
-  </div>`;
+    <button class="btn btn-primary" onclick="adminLogin()">登录</button></div>`;
 }
 
 function adminLogin() {
   const u = document.getElementById("adm-user").value;
   const p = document.getElementById("adm-pass").value;
   if (u === ADMIN_CRED.user && p === ADMIN_CRED.pass) {
-    sessionStorage.setItem("admin_auth", "1");
-    location.hash = "admin/dashboard";
-  } else {
-    document.getElementById("adm-err").classList.remove("hidden");
-  }
+    sessionStorage.setItem("admin_auth", "1"); location.hash = "admin/dashboard";
+  } else { document.getElementById("adm-err").classList.remove("hidden"); }
 }
 
 async function renderDashboard(app) {
   if (!sessionStorage.getItem("admin_auth")) { location.hash = "admin"; return; }
-
-  app.innerHTML = `<div class="nav">
-    <h2>管理后台</h2>
-    <a href="#" onclick="sessionStorage.removeItem('admin_auth');location.hash='admin'">退出</a>
-  </div>
-  <div class="tabs" id="tabs">
-    <button class="tab active" onclick="switchTab('overview')">概览</button>
-    <button class="tab" onclick="switchTab('teachers')">教师评分</button>
-    <button class="tab" onclick="switchTab('canteen')">饭堂</button>
-    <button class="tab" onclick="switchTab('dorm')">宿舍</button>
-    <button class="tab" onclick="switchTab('suggestions')">建议</button>
-  </div>
-  <div id="tab-content"></div>`;
-
+  app.innerHTML = `<div class="nav"><h2>管理后台</h2><a href="#" onclick="sessionStorage.removeItem('admin_auth');location.hash='admin'">退出</a></div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" onclick="switchTab('overview')">概览</button>
+      <button class="tab" onclick="switchTab('teachers')">教师评分</button>
+      <button class="tab" onclick="switchTab('canteen')">饭堂</button>
+      <button class="tab" onclick="switchTab('dorm')">宿舍</button>
+      <button class="tab" onclick="switchTab('suggestions')">建议</button>
+    </div><div id="tab-content"></div>`;
   switchTab("overview");
 }
 
@@ -354,69 +342,55 @@ async function renderOverview(el) {
     sb.from("teachers").select("*",{count:"exact",head:true}),
     sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content",""),
   ]);
-
-  const { data: dims } = await sb.rpc("dimension_averages"); // might not exist, use direct query
-  // fallback: query each dim
   const dimAvgs = [];
   for (let d of DIMS) {
     const { data } = await sb.from("teacher_ratings").select("score.avg(),score.count()").eq("dimension", d).single();
     dimAvgs.push({ name: d, avg: data?.avg ? Number(data.avg).toFixed(1) : "-", count: data?.count || 0 });
   }
-
   let dimsHtml = dimAvgs.map(d => `<tr><td>${d.name}</td><td>${d.avg}</td><td>${d.count}</td></tr>`).join("");
-
-  el.innerHTML = `
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num">${total||0}</div><div class="stat-label">总提交数</div></div>
-      <div class="stat-card"><div class="stat-num">${classes||0}</div><div class="stat-label">班级数</div></div>
-      <div class="stat-card"><div class="stat-num">${teachers||0}</div><div class="stat-label">教师数</div></div>
-      <div class="stat-card"><div class="stat-num">${sugCount||0}</div><div class="stat-label">建议数</div></div>
-    </div>
-    <div class="card"><h2 class="mb-16">各维度平均分</h2>
-      <table><tr><th>维度</th><th>均分</th><th>人次</th></tr>${dimsHtml}</table>
-    </div>
-    <button class="btn btn-primary mt-16" onclick="exportExcel()">导出 Excel</button>`;
+  el.innerHTML = `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">${total||0}</div><div class="stat-label">总提交</div></div>
+    <div class="stat-card"><div class="stat-num">${classes||0}</div><div class="stat-label">班级</div></div>
+    <div class="stat-card"><div class="stat-num">${teachers||0}</div><div class="stat-label">教师</div></div>
+    <div class="stat-card"><div class="stat-num">${sugCount||0}</div><div class="stat-label">建议</div></div>
+  </div>
+  <div class="card"><h2 class="mb-16">各维度平均分</h2><div class="table-wrap"><table><tr><th>维度</th><th>均分</th><th>人次</th></tr>${dimsHtml}</table></div></div>
+  <button class="btn btn-primary mt-16" onclick="exportExcel()">导出 Excel</button>`;
 }
 
 async function renderTeacherChart(el) {
   const { data: teachers } = await sb.from("teachers").select("id,name,class_id").order("class_id");
   const { data: classes } = await sb.from("classes").select("id,name").order("display_order");
   const classMap = Object.fromEntries(classes.map(c => [c.id, c.name]));
-
-  let html = '<div class="card"><h2 class="mb-16">教师评分详情</h2><table><tr><th>班级</th><th>教师</th><th>评价人数</th>';
+  let html = '<div class="card"><h2 class="mb-16">教师评分详情</h2><div class="table-wrap"><table><tr><th>班级</th><th>教师</th><th>人次</th>';
   DIMS.forEach(d => html += `<th>${d}</th>`);
-  html += '</tr>';
-
+  html += '<th>均分</th></tr>';
   for (let t of teachers) {
     const { data: subs } = await sb.from("submissions").select("id").eq("teacher_id", t.id);
     const subIds = (subs||[]).map(s => s.id);
     html += `<tr><td>${classMap[t.class_id]||""}</td><td>${t.name}</td><td>${subIds.length}</td>`;
-
+    let total=0, n=0;
     for (let d of DIMS) {
       let avg = "-";
       if (subIds.length > 0) {
         const { data: rows } = await sb.from("teacher_ratings").select("score").eq("dimension", d).in("submission_id", subIds);
-        if (rows && rows.length) {
-          avg = (rows.reduce((s,r)=>s+Number(r.score),0) / rows.length).toFixed(1);
-        }
+        if (rows && rows.length) { avg = (rows.reduce((s,r)=>s+Number(r.score),0) / rows.length).toFixed(1); total+=Number(avg); n++; }
       }
       html += `<td>${avg}</td>`;
     }
-    html += '</tr>';
+    html += `<td>${n ? (total/n).toFixed(1) : '-'}</td></tr>`;
   }
-  html += '</table></div>';
+  html += '</table></div></div>';
   el.innerHTML = html;
 }
 
 async function renderSimpleChart(el, table, title) {
   const { data } = await sb.from(table).select("dimension,score.avg(),score.count()");
-  let html = `<div class="card"><h2 class="mb-16">${title}</h2><table><tr><th>维度</th><th>均分</th><th>人次</th></tr>`;
+  let html = `<div class="card"><h2 class="mb-16">${title}</h2><div class="table-wrap"><table><tr><th>维度</th><th>均分</th><th>人次</th></tr>`;
   const grouped = {};
   (data||[]).forEach(r => { grouped[r.dimension] = { avg: Number(r.avg).toFixed(1), count: r.count }; });
-  for (let k in grouped) {
-    html += `<tr><td>${k}</td><td>${grouped[k].avg}</td><td>${grouped[k].count}</td></tr>`;
-  }
-  html += '</table></div>';
+  for (let k in grouped) html += `<tr><td>${k}</td><td>${grouped[k].avg}</td><td>${grouped[k].count}</td></tr>`;
+  html += '</table></div></div>';
   el.innerHTML = html;
 }
 
@@ -424,34 +398,19 @@ async function renderSuggestions(el) {
   const { data } = await sb.from("suggestions").select("submission_id,content").neq("content","").order("id",{ascending:false});
   let html = '<div class="card"><h2 class="mb-16">个人建议</h2>';
   if (!data || data.length === 0) html += '<p class="text-center" style="color:#888">暂无建议</p>';
-  else {
-    for (let s of data) {
-      const { data: sub } = await sb.from("submissions").select("class_id,teacher_id,created_at").eq("id", s.submission_id).single();
-      let meta = "";
-      if (sub) {
-        const { data: cls } = await sb.from("classes").select("name").eq("id", sub.class_id).single();
-        meta += cls ? cls.name : "";
-        if (sub.teacher_id) {
-          const { data: tch } = await sb.from("teachers").select("name").eq("id", sub.teacher_id).single();
-          meta += " · " + (tch ? tch.name : "未知教师");
-        }
-        meta += " · " + new Date(sub.created_at).toLocaleString("zh-CN");
-      }
-      html += `<div class="suggestion-item"><div class="meta">${meta}</div><div>${s.content}</div></div>`;
-    }
+  else for (let s of data) {
+    const { data: sub } = await sb.from("submissions").select("class_id,teacher_id,created_at").eq("id", s.submission_id).single();
+    let meta = ""; if (sub) { const { data: cls } = await sb.from("classes").select("name").eq("id", sub.class_id).single(); meta += cls ? cls.name : ""; if (sub.teacher_id) { const { data: tch } = await sb.from("teachers").select("name").eq("id", sub.teacher_id).single(); meta += " · " + (tch ? tch.name : "未知教师"); } meta += " · " + new Date(sub.created_at).toLocaleString("zh-CN"); }
+    html += `<div class="suggestion-item"><div class="meta">${meta}</div><div>${s.content}</div></div>`;
   }
-  html += '</div>';
-  el.innerHTML = html;
+  html += '</div>'; el.innerHTML = html;
 }
 
 async function exportExcel() {
   const wb = XLSX.utils.book_new();
-
-  // Sheet 1: 教师评价
   const { data: teachers } = await sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher");
   const { data: classes } = await sb.from("classes").select("id,name");
   const classMap = Object.fromEntries(classes.map(c=>[c.id,c.name]));
-
   const tRows = [["班级","教师","科目","班主任","评价人数",...DIMS,"综合均分"]];
   for (let t of (teachers||[])) {
     const { data: subs } = await sb.from("submissions").select("id").eq("teacher_id", t.id);
@@ -459,36 +418,22 @@ async function exportExcel() {
     const row = [classMap[t.class_id]||"", t.name, t.subjects, t.is_head_teacher?"是":"否", subIds.length];
     let total=0, n=0;
     for (let d of DIMS) {
-      let avg = "-";
-      if (subIds.length) {
-        const { data: r } = await sb.from("teacher_ratings").select("score").eq("dimension",d).in("submission_id", subIds);
-        if (r && r.length) { avg = (r.reduce((s,x)=>s+Number(x.score),0)/r.length).toFixed(1); total+=Number(avg); n++; }
-      }
+      let avg = "-"; if (subIds.length) { const { data: r } = await sb.from("teacher_ratings").select("score").eq("dimension",d).in("submission_id", subIds); if (r && r.length) { avg = (r.reduce((s,x)=>s+Number(x.score),0)/r.length).toFixed(1); total+=Number(avg); n++; } }
       row.push(avg);
     }
     row.push(n ? (total/n).toFixed(1) : "-");
     tRows.push(row);
   }
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tRows), "教师评价");
-
-  // Sheet 2-3: 饭堂/宿舍
   for (let [tbl, title] of [["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]) {
     const { data } = await sb.from(tbl).select("dimension,score.avg(),score.count()");
-    const rows = [["维度","均分","人次"]];
-    (data||[]).forEach(r=>rows.push([r.dimension, Number(r.avg).toFixed(1), r.count]));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), title);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...(data||[]).map(r=>[r.dimension, Number(r.avg).toFixed(1), r.count])]), title);
   }
-
-  // Sheet 4: 建议
   const { data: sugs } = await sb.from("suggestions").select("submission_id,content").order("id",{ascending:false});
-  const sRows = [["提交ID","建议内容"]];
-  (sugs||[]).forEach(s=>sRows.push([s.submission_id, s.content]));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sRows), "建议");
-
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(sugs||[]).map(s=>[s.submission_id, s.content])]), "建议");
   XLSX.writeFile(wb, `画室满意度调查_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// ─── Init ───────────────────────────────────
 window.addEventListener("hashchange", route);
 route();
 </script>
