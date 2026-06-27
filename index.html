@@ -242,7 +242,8 @@ function dt(){return new Date().toISOString().slice(0,10);}
 
 // ══════════ 学生问卷 ══════════
 async function srv(){
-  if(location.hash.slice(1)==="ok"){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>提交成功！</h2><p class="sec-desc">感谢你的宝贵评价，画室因你而更好</p></div></div></div>`;return;}
+  const h=location.hash.slice(1);if(h==="adm"||h==="admin"||h==="dash"){admEnter();return;}
+  if(h==="ok"){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>提交成功！</h2><p class="sec-desc">感谢你的宝贵评价，画室因你而更好</p></div></div></div>`;return;}
   if(isDn()){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>问卷已提交</h2><p class="sec-desc">每台设备仅限提交一次，感谢参与</p></div></div></div>`;return;}
   let data;try{const r=await sb.from("classes").select("*").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
   document.getElementById("app").innerHTML=`<div class="container"><h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
@@ -287,7 +288,7 @@ function renderDashboard(){
         <div class="sm-item${curPg==='export'?' on':''}" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
-      <div class="side-foot">v2.1 · 画室专用</div>
+      <div class="side-foot">v2.2 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
