@@ -60,21 +60,12 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .ok-box .ok{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--green)}
 .tc{text-align:center}
 .mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:6px 0 20px}
-.nav .brand{font-size:18px;font-weight:700;color:var(--txt)}
-.nav .brand em{color:var(--blue);font-style:normal}
-.nav a{color:var(--txt3);text-decoration:none;font-size:12px;transition:color .15s}
-.nav a:hover{color:var(--blue)}
 .steps{display:flex;gap:6px;margin-bottom:24px}
 .steps.sticky{position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0 12px;margin:-8px 0 16px}
 .step-d{flex:1;text-align:center;padding:9px 4px;border-radius:8px;background:#e8eaed;font-size:12px;color:var(--txt3);transition:all .2s}
 .step-d.a{background:var(--blue);color:#fff;font-weight:600}
 .step-d.d{background:var(--green);color:#fff}
 .bnr{background:#fff3e0;color:#92400e;padding:12px 16px;border-radius:8px;font-size:13px;text-align:center;margin-bottom:16px;border:1px solid #fde68a}
-.ft{text-align:center;margin-top:20px}
-.ft a{color:var(--txt3);font-size:11px;text-decoration:none;transition:color .15s}
-.ft a:hover{color:var(--blue)}
-.fc{text-align:center;padding:15px;color:var(--txt3);font-size:12px}
 
 /* ====== 管理后台专用 ====== */
 .wrap{display:flex;min-height:100vh}
@@ -110,7 +101,6 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .kpi.k-b{border-left-color:var(--blue)}.kpi.k-b .kpi-n{color:var(--blue)}
 .kpi.k-g{border-left-color:var(--green)}.kpi.k-g .kpi-n{color:var(--green)}
 .kpi.k-o{border-left-color:var(--orange)}.kpi.k-o .kpi-n{color:var(--orange)}
-.kpi.k-r{border-left-color:var(--red)}.kpi.k-r .kpi-n{color:var(--red)}
 .kpi.k-p{border-left-color:var(--purple)}.kpi.k-p .kpi-n{color:var(--purple)}
 .kpi-label{font-size:12px;color:var(--txt3);margin-bottom:6px;font-weight:500}
 .kpi-n{font-size:28px;font-weight:700;font-family:Consolas,Monaco,"SF Mono",monospace;line-height:1.2}
@@ -121,7 +111,6 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .panel-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:10px}
 .panel-hd-tit{font-size:15px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px}
 .panel-body{padding:20px;overflow-x:auto}
-.panel-body.np{padding:0}
 
 /* 筛选区 */
 .flt-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 20px 16px}
@@ -163,9 +152,6 @@ tr:hover td{background:var(--blue-lt)}
 .pager button{min-width:32px;height:32px;border:1px solid var(--brd);border-radius:4px;background:var(--card);color:var(--txt2);cursor:pointer;font-size:13px;transition:all .15s}
 .pager button:hover{color:var(--blue);border-color:var(--blue)}
 .pager button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-
-/* 图表卡片 */
-.chart-card{margin-bottom:20px}
 
 /* 响应式 */
 @media(max-width:768px){
@@ -271,17 +257,18 @@ function doLogin(){const u=document.getElementById("au").value,p=document.getEle
 // ===== 后台主框架 =====
 let ca={},curPg="overview",tf="";
 
+let _timer=0;
 function renderDashboard(){
   document.getElementById("app").innerHTML=`<div class="wrap">
     <aside class="sidebar">
       <div class="side-logo"><h2><em>画室</em>调查</h2><p>管理后台</p></div>
       <nav class="side-menu">
-        <div class="sm-item${curPg==='overview'?' on':''}" onclick="switchPg('overview')"><span class="dot"></span>数据概览</div>
-        <div class="sm-item${curPg==='teacher'?' on':''}" onclick="switchPg('teacher')"><span class="dot"></span>教师评分</div>
-        <div class="sm-item${curPg==='canteen'?' on':''}" onclick="switchPg('canteen')"><span class="dot"></span>饭堂评价</div>
-        <div class="sm-item${curPg==='dormitory'?' on':''}" onclick="switchPg('dormitory')"><span class="dot"></span>宿舍评价</div>
-        <div class="sm-item${curPg==='manage'?' on':''}" onclick="switchPg('manage')"><span class="dot"></span>数据管理</div>
-        <div class="sm-item${curPg==='export'?' on':''}" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
+        <div class="sm-item${curPg==='overview'?' on':''}" data-pg="overview" onclick="switchPg('overview')"><span class="dot"></span>数据概览</div>
+        <div class="sm-item${curPg==='teacher'?' on':''}" data-pg="teacher" onclick="switchPg('teacher')"><span class="dot"></span>教师评分</div>
+        <div class="sm-item${curPg==='canteen'?' on':''}" data-pg="canteen" onclick="switchPg('canteen')"><span class="dot"></span>饭堂评价</div>
+        <div class="sm-item${curPg==='dormitory'?' on':''}" data-pg="dormitory" onclick="switchPg('dormitory')"><span class="dot"></span>宿舍评价</div>
+        <div class="sm-item${curPg==='manage'?' on':''}" data-pg="manage" onclick="switchPg('manage')"><span class="dot"></span>数据管理</div>
+        <div class="sm-item${curPg==='export'?' on':''}" data-pg="export" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
       <div class="side-foot">v2.2 · 画室专用</div>
@@ -294,7 +281,7 @@ function renderDashboard(){
       <div class="content" id="dashBody"><div class="loading">加载中...</div></div>
     </div>
   </div>`;
-  updateTime();setInterval(updateTime,1000);
+  updateTime();if(_timer)clearInterval(_timer);_timer=setInterval(updateTime,1000);
   loadData(true).then(()=>switchPg(curPg));
 }
 function updateTime(){const t=document.getElementById("liveTime");if(t)t.textContent=new Date().toLocaleString("zh-CN",{hour12:false});}
@@ -333,7 +320,7 @@ function mS(sid){const s=(ca.s||[]).find(s=>s.id===sid);if(!s)return sid;const c
 // 页面切换
 async function switchPg(pg){
   curPg=pg;
-  document.querySelectorAll(".sm-item").forEach(el=>el.classList.toggle("on",el.textContent.includes(pg==='overview'?'概览':pg==='teacher'?'教师':pg==='canteen'?'饭堂':pg==='dormitory'?'宿舍':pg==='manage'?'管理':'导出')));
+  document.querySelectorAll(".sm-item").forEach(el=>el.classList.toggle("on",el.dataset.pg===pg));
   const bc=document.getElementById("breadcrumb");if(bc)bc.textContent=pg==='overview'?'数据概览':pg==='teacher'?'教师评分':pg==='canteen'?'饭堂评价':pg==='dormitory'?'宿舍评价':pg==='manage'?'数据管理':'导出数据';
   await loadData(true);
   const el=document.getElementById("dashBody");if(!el)return;
@@ -389,10 +376,10 @@ function renderOverview(el){
       <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📋 按班级汇总</span></div><div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th class="ta-c">提交数</th><th class="ta-c">教师均分</th></tr></thead><tbody>${classRows||'<tr><td colspan="3" class="ta-c" style="color:var(--txt3)">暂无数据</td></tr>'}</tbody></table></div></div></div>
       <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">💬 综合建议</span></div><div class="panel-body">${sugHtml||'<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>'}</div></div>
     </div>`;
-  loadRatingAvg("canteen_ratings","饭堂").then(v=>{const e=document.getElementById("kpi-canteen");if(e)e.textContent=v;});
-  loadRatingAvg("dormitory_ratings","宿舍").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
+  loadRatingAvg("canteen_ratings").then(v=>{const e=document.getElementById("kpi-canteen");if(e)e.textContent=v;});
+  loadRatingAvg("dormitory_ratings").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
 }
-async function loadRatingAvg(table,label){try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
+async function loadRatingAvg(table){try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
 
 // ===== 数据管理 =====
 let mgSel=[],mgPg=1,mgTotal=0;const mgSize=20;
