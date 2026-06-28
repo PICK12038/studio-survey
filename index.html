@@ -120,7 +120,6 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .panel{background:var(--card);border-radius:var(--rds);box-shadow:var(--sh);overflow:hidden}
 .panel-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:10px}
 .panel-hd-tit{font-size:15px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px}
-.panel-hd-act{display:flex;align-items:center;gap:8px}
 .panel-body{padding:20px;overflow-x:auto}
 .panel-body.np{padding:0}
 
@@ -140,9 +139,6 @@ tr:hover td{background:var(--blue-lt)}
 .ta-c{text-align:center}
 
 /* 操作按钮 */
-.btn-sm{padding:5px 12px;font-size:12px;border-radius:5px;border:1px solid var(--brd);background:var(--card);color:var(--txt2);cursor:pointer;transition:all .15s;font-weight:500}
-.btn-sm:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-lt)}
-.btn-sm.danger:hover{color:var(--red);border-color:var(--red);background:var(--red-bg)}
 .btn-pm{background:var(--blue);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;cursor:pointer;transition:all .15s;font-weight:500;display:inline-flex;align-items:center;gap:6px}
 .btn-pm:hover{background:var(--blue-hv)}
 .btn-pm::before{content:'↓ '}
@@ -211,12 +207,12 @@ tr:hover td{background:var(--blue-lt)}
   .dim-label{font-size:13px}
   .container{padding:12px 8px 80px;padding-bottom:max(80px, calc(env(safe-area-inset-bottom) + 80px))}
 }
-.side-link{display:block;margin:8px 16px;padding:10px 14px;border-radius:8px;color:var(--txt3);font-size:13px;text-decoration:none;transition:all .2s;border:1px dashed var(--bor)}
+.side-link{display:block;margin:8px 16px;padding:10px 14px;border-radius:8px;color:var(--txt3);font-size:13px;text-decoration:none;transition:all .2s;border:1px dashed var(--brd)}
 .side-link:hover{color:var(--blue);border-color:var(--blue);background:rgba(0,82,217,.04)}
 .student-link{font-size:13px;color:var(--blue);text-decoration:none;margin-right:18px;font-weight:500;transition:opacity .2s}
 .student-link:hover{opacity:.75}
-.btn-sm{padding:4px 10px;font-size:12px;border-radius:5px;border:1px solid;cursor:pointer;background:var(--bg);border-color:var(--bor);color:var(--txt);transition:all .15s}
-.btn-sm:hover{opacity:.85}
+.btn-sm{padding:4px 10px;font-size:12px;border-radius:5px;border:1px solid var(--brd);cursor:pointer;background:var(--bg);color:var(--txt);transition:all .15s}
+.btn-sm:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 .btn-d{color:var(--red);border-color:var(--red)}.btn-d:hover{background:var(--red);color:#fff}
 .mg-cb{width:16px;height:16px;cursor:pointer;accent-color:var(--blue)}
 #mgTbl tbody tr.sel{background:rgba(0,82,217,.06)}
@@ -334,8 +330,6 @@ function pS(cat,cid){
   return(ca.sg||[]).filter(s=>{const lines=(s.content||"").split("\n");return lines.some(l=>l.startsWith(`[${cat}:`));}).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith(`[${cat}:`))};});
 }
 function mS(sid){const s=(ca.s||[]).find(s=>s.id===sid);if(!s)return sid;const c=(ca.c||[]).find(c=>c.id===s.class_id);let m=c?c.name:"";if(s.teacher_id){const t=(ca.t||[]).find(t=>t.id===s.teacher_id);m+=" · "+(t?t.name:"");}return m+" · "+new Date(s.created_at).toLocaleString("zh-CN");}
-function avgD(cat,table,field,extraFilter){return async()=>{let data;try{const q=sb.from(table).select(field||"dimension,score");if(extraFilter)extraFilter(q);const r=await q;if(r.error)throw r.error;data=r.data;}catch(e){return"-";}return ag((data||[]).map(r=>r.score));};}
-
 // 页面切换
 async function switchPg(pg){
   curPg=pg;
@@ -347,10 +341,9 @@ async function switchPg(pg){
   else if(pg==='teacher')renderTeacher(el);
   else if(pg==='canteen')renderRating(el,"canteen_ratings","饭堂","🍽️","饭堂");
   else if(pg==='dormitory')renderRating(el,"dormitory_ratings","宿舍","🏠","宿舍");
-  else if(pg==='manage')renderManage(el);
+  else if(pg==='manage'){mgPg=1;mgSel=[];renderManage(el);}
   else if(pg==='export')renderExport(el);
 }
-function renderKPI(el,items){let h=`<div class="kpi-row">`;items.forEach(i=>h+=`<div class="kpi k-${i.c||'b'}"><div class="kpi-label">${i.l}</div><div class="kpi-n">${i.v}</div><div class="kpi-sub">${i.s||""}</div></div>`);el.innerHTML=h+`</div>`;}
 
 // ===== 概览 =====
 function renderOverview(el){
@@ -402,7 +395,7 @@ function renderOverview(el){
 async function loadRatingAvg(table,label){try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
 
 // ===== 数据管理 =====
-let mgSel=[]; // 选中的 submission_id 列表
+let mgSel=[],mgPg=1,mgTotal=0;const mgSize=20;
 function toggleSel(id){const i=mgSel.indexOf(id);i>-1?mgSel.splice(i,1):mgSel.push(id);updateSelUI();}
 function toggleAll(){const rows=document.querySelectorAll('#mgTbl tbody tr[data-sid]');const all=Array.from(rows).map(r=>r.dataset.sid);const allSel=all.every(id=>mgSel.includes(id));if(allSel){mgSel=[];}else{mgSel=all;}updateSelUI();}
 function updateSelUI(){const n=mgSel.length;document.getElementById('mgSelCnt').textContent=n;const btn=document.getElementById('mgDelBtn');if(btn){btn.disabled=n===0;btn.textContent=n>0?`批量删除 (${n})`:'批量删除';}document.querySelectorAll('#mgTbl tbody tr[data-sid]').forEach(r=>{const sid=r.dataset.sid;const cb=r.querySelector('.mg-cb');if(cb)cb.checked=mgSel.includes(sid);r.classList.toggle('sel',mgSel.includes(sid));});const all=document.getElementById('mgAll');if(all){const rows=document.querySelectorAll('#mgTbl tbody tr[data-sid]');const ids=Array.from(rows).map(r=>r.dataset.sid);all.checked=ids.length>0&&ids.every(id=>mgSel.includes(id));all.indeterminate=mgSel.length>0&&ids.some(id=>mgSel.includes(id))&&!ids.every(id=>mgSel.includes(id));}}
@@ -410,20 +403,41 @@ function updateSelUI(){const n=mgSel.length;document.getElementById('mgSelCnt').
 async function renderManage(el){
   await loadData(true);
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
+  // 分页取 submissions
+  const from=(mgPg-1)*mgSize,to=from+mgSize-1;
+  let pgSubs=[],pgTotal=0;
+  try{
+    const r=await sb.from("submissions").select("*",{count:"exact"}).order("created_at",{ascending:false}).range(from,to);
+    if(!r.error){pgSubs=r.data||[];pgTotal=r.count||0;}
+    mgTotal=pgTotal;
+  }catch(e){}
   let rows="";
-  (ca.s||[]).forEach(s=>{
+  pgSubs.forEach(s=>{
     const ts=(ca.r||[]).filter(r=>r.submission_id===s.id).length;
     const ds=ca.sg.filter(g=>g.submission_id===s.id).length;
     rows+=`<tr data-sid="${s.id}"><td class="ta-c"><input type="checkbox" class="mg-cb" onchange="toggleSel('${s.id}')" ${mgSel.includes(s.id)?'checked':''}></td><td>${cm[s.class_id]||""}</td><td>${ts}</td><td>${ds?"<span style='color:var(--blue)'>"+ds+"条</span>":"-"}</td><td>${new Date(s.created_at).toLocaleString("zh-CN")}</td><td><button class="btn-sm btn-d" onclick="delOne('${s.id}')">删除</button></td></tr>`;
   });
+  const totalPages=Math.ceil(mgTotal/mgSize);
+  let pager="";
+  if(totalPages>1){
+    pager=`<div class="pager"><span class="info">共 ${mgTotal} 条 / ${totalPages} 页</span>`;
+    const maxBtn=7,startPg=Math.max(1,Math.min(mgPg-Math.floor(maxBtn/2),totalPages-maxBtn+1));
+    const endPg=Math.min(totalPages,startPg+maxBtn-1);
+    if(mgPg>1)pager+=`<button onclick="goMgPage(${mgPg-1})">‹</button>`;
+    for(let i=startPg;i<=endPg;i++)pager+=`<button class="${i===mgPg?'on':''}" onclick="goMgPage(${i})">${i}</button>`;
+    if(mgPg<totalPages)pager+=`<button onclick="goMgPage(${mgPg+1})">›</button>`;
+    pager+=`</div>`;
+  }
   el.innerHTML=`
     <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">🗂️ 数据管理</span><div><button class="btn-pm sm btn-d" id="mgDelBtn" disabled onclick="delSel()">批量删除</button></div></div>
       <div class="panel-body">
         <div class="flt-row"><label>已选 <b id="mgSelCnt">0</b> 条</label><span style="color:var(--txt3);font-size:12px;margin-left:8px">可多选提交记录进行批量删除</span></div>
         <div class="tbl-wrap"><table id="mgTbl"><thead><tr><th class="ta-c" style="width:40px"><input type="checkbox" id="mgAll" onchange="toggleAll()"></th><th>班级</th><th class="ta-c">评分条数</th><th>建议内容</th><th>提交时间</th><th style="width:70px">操作</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="ta-c" style="color:var(--txt3);padding:20px">暂无提交记录</td></tr>'}</tbody></table></div>
       </div>
+      ${pager}
     </div>`;
 }
+function goMgPage(p){mgPg=p;mgSel=[];switchPg('manage');}
 async function delOne(sid){
   if(!confirm(`确定删除该提交记录及其关联的所有评分与建议吗？`))return;
   await delSubs([sid]);
