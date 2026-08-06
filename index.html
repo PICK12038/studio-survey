@@ -503,12 +503,12 @@ function renderTeacher(el){
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
   let opt='<option value="">全部班级</option>';ca.c.forEach(c=>opt+=`<option value="${c.id}" ${tf==c.id?'selected':''}>${x(c.name)}</option>`);
   const ftd=tf?(ca.t||[]).filter(t=>t.class_id==tf):(ca.t||[]);
-  const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});
+  const trByTid={},trSidSet={};(ca.r||[]).forEach(r=>{const p=pd(r.dimension);if(p){if(!trByTid[p.tid])trByTid[p.tid]={};if(!trByTid[p.tid][r.dimension])trByTid[p.tid][r.dimension]=[];trByTid[p.tid][r.dimension].push(r.score);if(!trSidSet[p.tid])trSidSet[p.tid]=new Set();trSidSet[p.tid].add(r.submission_id);}});
   let h=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">👨‍🏫 教师评分详情</span><button class="btn-pm sm" onclick="doExportTeacher()">导出教师数据</button></div>
     <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select></div>
     <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
   DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody>';
-  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.tid===t.id&&p.dim===d&&si.includes(r.submission_id);}).map(r=>r.score);h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
+  for(let t of ftd){const cnt=(trSidSet[t.id]||new Set()).size;h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${cnt}</td>`;let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
   h+=`</tbody></table></div></div>`;
   h+=`<div class="sug-lst"><h4>📝 学生对教师的建议${tf?'（'+cm[tf]+'）':'（全部班级）'}</h4>${renderSugs("教师",tf)}</div></div>`;
   el.innerHTML=h;
