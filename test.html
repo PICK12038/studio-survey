@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!-- ═══════════════════════════════════════════
+  测试专用学生端 —— 可无限次填写查看
+  与正式学生端共用同一 Supabase 数据源
+  请勿在生产环境泄露此页面
+═══════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>【测试】画室满意度调查</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>if(typeof supabase==='undefined'){document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');}</script>
+<style>
+/* ══════ 样式与正式学生端一致 ══════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#0052d9;--blue-lt:#e8f0fe;--blue-hv:#003db8;--green:#00a870;--green-bg:#e6f7f0;--red:#d54941;--red-bg:#fdece8;--orange:#e37318;--orange-bg:#fff3e8;--purple:#7c3aed;--purple-bg:#f3e8ff;--bg:#f0f2f5;--card:#fff;--txt:#1d2129;--txt2:#646a73;--txt3:#8f959e;--brd:#e5e6eb;--brd2:#e8eaed;--rds:8px;--sh:0 1px 2px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04)}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:var(--txt);line-height:1.6;-webkit-font-smoothing:antialiased}
+.container{max-width:780px;margin:0 auto;padding:16px 12px 80px;padding-bottom:max(80px, calc(env(safe-area-inset-bottom) + 80px))}
+.card{background:var(--card);border-radius:var(--rds);padding:24px 20px;margin-bottom:16px;box-shadow:var(--sh);border:1px solid var(--brd)}
+.sec-tit{font-size:16px;font-weight:600;color:var(--txt);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.sec-tit .ico{font-size:18px}
+.sec-desc{font-size:12px;color:var(--txt3);margin-bottom:16px}
+.fun-line{display:inline-block;font-size:11px;color:var(--txt3);font-style:italic;margin-bottom:14px;padding-left:8px;border-left:2px solid var(--brd)}
+select{width:100%;padding:11px 14px;border:1px solid var(--brd);border-radius:8px;font-size:14px;background:var(--card);appearance:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238f959e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;transition:border .15s}
+select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-lt)}
+.score-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--brd);gap:8px}
+.score-row:last-child{border-bottom:none}
+.dim-label{font-size:14px;color:var(--txt);flex:1;min-width:0;word-break:break-all}
+.score-btns{display:flex;gap:4px;flex-shrink:0}
+.sbtn{min-width:40px;height:40px;padding:0;border:1px solid var(--brd);border-radius:7px;background:var(--card);font-size:14px;cursor:pointer;transition:all .12s;color:var(--txt2);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;font-weight:500}
+.sbtn:active{transform:scale(.93)}
+.sbtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.sbtn.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600}
+.tc-card{border:1px solid var(--brd);border-radius:var(--rds);padding:16px;margin-bottom:12px;background:#fafbfc;transition:all .15s}
+.tc-card:hover{border-color:#b8c5e0}
+.tc-card.sel{border-color:var(--blue);background:var(--blue-lt)}
+.tc-card .tch{display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer}
+.tc-card .tname{font-weight:600;font-size:15px}
+.tc-card .tsub{font-size:11px;color:var(--txt3)}
+.badge{font-size:10px;padding:1px 7px;border-radius:10px;background:#fff3e0;color:#e65100;flex-shrink:0;font-weight:500;border:1px solid #ffe0b2}
+.badge-test{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--red);color:#fff;font-weight:700;letter-spacing:.5px}
+.cmt{width:100%;padding:10px 12px;border:1px solid var(--brd);border-radius:8px;font-size:13px;resize:none;min-height:44px;font-family:inherit;margin-top:10px;background:var(--card);transition:border .15s}
+.cmt:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-lt)}
+textarea.big{width:100%;padding:12px;border:1px solid var(--brd);border-radius:8px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit;transition:border .15s}
+textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--blue-lt)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 22px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;letter-spacing:.2px}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--blue);color:#fff;width:100%}
+.btn-p:hover{background:var(--blue-hv)}
+.btn-p:disabled{background:#bbd3fb;cursor:not-allowed;transform:none}
+.btn-o{background:var(--card);color:var(--blue);border:1px solid var(--blue)}
+.btn-o:hover{background:var(--blue-lt)}
+.row2{display:flex;gap:10px}.row2 .btn{flex:1}
+.err{color:var(--red);font-size:12px;margin-top:4px;display:none;align-items:center;gap:4px}
+.err.s{display:flex}
+.ok-box{text-align:center;padding:32px 16px}
+.ok-box .ok{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--green)}
+.tc{text-align:center}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.steps{display:flex;gap:6px;margin-bottom:24px}
+.steps.sticky{position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0 12px;margin:-8px 0 16px}
+.step-d{flex:1;text-align:center;padding:9px 4px;border-radius:8px;background:#e8eaed;font-size:12px;color:var(--txt3);transition:all .2s}
+.step-d.a{background:var(--blue);color:#fff;font-weight:600}
+.step-d.d{background:var(--green);color:#fff}
+.bnr{background:#fff3e0;color:#92400e;padding:12px 16px;border-radius:8px;font-size:13px;text-align:center;margin-bottom:16px;border:1px solid #fde68a}
+
+/* ══════ 测试页面专属 ══════ */
+.test-banner{background:var(--red);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:0;z-index:30}
+.test-banner .test-warn{background:rgba(255,255,255,.2);border-radius:3px;padding:2px 8px;font-size:10px;letter-spacing:.5px}
+.log-card{background:var(--card);border-radius:var(--rds);padding:0;margin-top:16px;box-shadow:var(--sh);border:1px solid var(--brd)}
+.log-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--brd);font-size:14px;font-weight:600}
+.log-hd .log-cnt{font-size:12px;color:var(--txt3);font-weight:400}
+.log-body{padding:6px 18px 14px;max-height:400px;overflow-y:auto}
+.log-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--brd2);font-size:13px}
+.log-item:last-child{border-bottom:none}
+.log-idx{font-size:11px;color:var(--txt3);min-width:24px;text-align:center;font-family:Consolas,Monaco,monospace}
+.log-cls{font-size:12px;color:var(--txt2);min-width:80px;flex-shrink:0}
+.log-ts{font-size:11px;color:var(--txt3);margin-left:auto;flex-shrink:0}
+.log-meta{font-size:12px;color:var(--purple);font-weight:500;flex-shrink:0}
+
+/* ══════ 响应式 ══════ */
+@media(max-width:640px){
+  .card{padding:16px 14px}.sec-tit{font-size:15px}.score-row{flex-wrap:wrap;padding:10px 0;gap:6px}
+  .dim-label{width:100%;font-size:14px;font-weight:500;margin-bottom:2px}
+  .score-btns{width:100%;justify-content:space-between;gap:3px;flex-wrap:wrap}
+  .sbtn{flex:1;min-width:36px;max-width:52px;height:42px;font-size:13px;border-radius:6px}
+  .tc-card{padding:12px}.tname{font-size:14px}.steps{margin-bottom:16px}.step-d{padding:7px 2px;font-size:11px}
+  .btn{padding:13px 20px;font-size:15px;width:100%}.row2{flex-direction:column;gap:8px}
+}
+@media(min-width:641px){
+  .container{padding:28px 28px 56px}.card{padding:28px 24px}.sec-tit{font-size:18px}
+  .sbtn{min-width:44px;height:44px;font-size:15px}.tc-card{padding:20px}.score-row{padding:13px 0}
+  .steps.sticky{position:static;background:transparent;padding:0;margin:0 0 24px}
+}
+</style>
+</head>
+<body id="app">
+
+<!-- ══════ 顶部 TEST 标识 ══════ -->
+<div class="test-banner">
+  <span class="badge-test">TEST</span>
+  测试专用学生端 — 可无限次重复填写 · 数据写入同一数据库
+  <span class="test-warn">勿对外公开</span>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   测试版学生端 JS
+   与正式版共用 Supabase，核心差异：
+   ① 去掉 isDn() 限制，允许无限次提交
+   ② doSb() 后不清除状态，显示提交记录日志
+   ③ 提交成功后可"再填一份"回到步骤①
+═══════════════════════════════════════════ */
+
+const SB="https://iemiujgdblsuvzsvirju.supabase.co";
+const SK="sb_publishable_LCj2enxyQTWRIzXZ7LPaFA_doIwMzCx";
+const DM=["教学态度","课堂讲解","示范教学","课后辅导","作业点评"];
+const sb=supabase.createClient(SB,SK);
+
+let S=1,C=null,T=null,TS={},TC={},CS={},CC={},DS={},DC={};
+// 提交日志：{idx, className, teacherCount, time}
+let subLog=[];
+
+function x(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+function ag(s){return s.length?(s.reduce((a,b)=>a+b,0)/s.length).toFixed(1):"-";}
+
+// ★ 测试版：永远允许提交
+function isDn(){return false;}
+
+async function go(){
+  const app=document.getElementById("app");
+  if(typeof supabase==='undefined'){app.innerHTML=`<div class="container" style="text-align:center;padding:60px 20px"><h2>加载失败</h2><p style="color:var(--txt3);margin:12px 0">SDK 未能加载，请检查网络后刷新</p><button class="btn btn-p" style="width:auto;display:inline-flex" onclick="location.reload()">刷新重试</button></div>`;return;}
+  srv();
+}
+
+async function srv(){
+  let data;try{const r=await sb.from("classes").select("id,name,display_order").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
+  const app=document.getElementById("app");
+  app.innerHTML=`<div class="container">
+    <h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查 <span class="badge-test" style="vertical-align:middle;margin-left:6px">TEST</span></h1>
+    <p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
+    <div class="steps sticky"><div class="step-d${S===1?' a':S>1?' d':''}">①选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">②评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">③饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">④确认提交</div></div>
+    <div id="sc"></div><div id="logArea"></div></div>`;
+  const el=document.getElementById("sc");
+  if(S===1)st1(el,data);else if(S===2)st2(el);else if(S===3)st3(el);else st4(el);
+  renderLog();
+}
+
+/* ══════ 步骤① 选班级 ══════ */
+function st1(el,cls){let o='<option value="">请选择班级</option>';cls.forEach(c=>o+=`<option value="${c.id}">${x(c.name)}</option>`);el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🏫</span>所属班级</div><div class="fun-line">选个班级，开启你的评价之旅吧</div><select id="cs">${o}</select><div class="err" id="ce">请选择班级</div><button class="btn btn-p mt24" onclick="nx1()">下一步 →</button></div>`;}
+function nx1(){const v=document.getElementById("cs").value;if(!v){document.getElementById("ce").classList.add("s");return;}C=v;S=2;go();}
+
+/* ══════ 步骤② 评价教师 ══════ */
+async function st2(el){let data;try{const r=await sb.from("teachers").select("id,name,subjects,is_head_teacher,class_id").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p style="text-align:center;padding:24px;color:var(--txt3)">该班级暂无教师数据</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
+  let h=`<div class="card"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><div class="fun-line">给老师们打个分吧（测试模式下可以反复提交哦）</div>`;
+  data.forEach(t=>{h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;});h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
+function pkT(id){T=T===id?null:id;document.querySelectorAll('.tc-card').forEach(c=>c.classList.toggle('sel',c.id==='tc-'+T));}
+function stS(tid,dim,score,btn){TS[tid+"_"+dim]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
+function nx2(){document.querySelectorAll('.cmt[data-tid]').forEach(ta=>{TC[ta.dataset.tid]=ta.value.trim();});if(!Object.values(TS).some(Boolean)){document.getElementById("te").classList.add("s");return;}S=3;go();}
+
+/* ══════ 步骤③ 饭堂宿舍 ══════ */
+function st3(el){el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🍽️</span>饭堂评价</div><div class="fun-line">食堂阿姨的手抖不抖？来评个分！</div>${sg("c","饭菜口味",CS,CC)}${sg("c","服务态度",CS,CC)}</div><div class="card"><div class="sec-tit"><span class="ico">🏠</span>宿舍评价</div><div class="fun-line">宿舍生活怎么样？宿管阿姨等你评价~</div>${sg("d","宿舍管理",DS,DC)}${sg("d","宿管服务",DS,DC)}</div><div class="card"><div class="sec-tit"><span class="ico">💬</span>个人建议</div><div class="fun-line">还有什么想说的？畅所欲言吧！</div><textarea class="big" id="gs" placeholder="请留下您的宝贵建议（选填）"></textarea></div><div class="row2 mb16"><button class="btn btn-o" onclick="S=2;go()">← 上一步</button><button class="btn btn-p" onclick="nx3()">下一步 →</button></div>`;}
+function sg(pf,lb,ss,cc){const v=ss[lb];let h=`<div class="score-row"><span class="dim-label">${lb}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stG('${pf}','${lb}',${i},this)">${i}</button>`;return h+`</div></div><textarea class="cmt" placeholder="${lb}方面有什么建议？（选填）" data-gp="${pf}_${lb}">${cc[lb]||""}</textarea>`;}
+function stG(pf,lb,score,btn){if(pf==="c")CS[lb]=score;else DS[lb]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
+function nx3(){document.querySelectorAll('.cmt[data-gp]').forEach(ta=>{const[p,k]=ta.dataset.gp.split("_");if(p==="c")CC[k]=ta.value.trim();else DC[k]=ta.value.trim();});S=4;go();}
+
+/* ══════ 步骤④ 确认提交 ══════ */
+async function st4(el){let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}let s=`<p><b>班级：</b>${x(clsName)||"未知"}</p><p><b>教师已评：</b>${Object.values(TS).filter(Boolean).length} 项</p><p><b>饭堂已评：</b>${Object.values(CS).filter(Boolean).length} 项</p><p><b>宿舍已评：</b>${Object.values(DS).filter(Boolean).length} 项</p>`;if(Object.values(TC).some(Boolean)||Object.values(CC).some(Boolean)||Object.values(DC).some(Boolean))s+=`<p><b>建议：</b>已填写</p>`;el.innerHTML=`<div class="card tc"><div class="sec-tit" style="justify-content:center"><span class="ico">✅</span>确认提交</div><div class="fun-line">测试模式：提交后可继续填写下一份</div><div style="text-align:left;margin:16px 0;font-size:14px;line-height:2.2">${s}</div><div class="row2 mb16"><button class="btn btn-o" onclick="S=3;go()">← 返回修改</button><button class="btn btn-p" id="sb" onclick="doSb()">确认提交</button></div><div class="err mt8" id="se"></div></div>`;}
+
+/* ══════ 提交逻辑（核心：不锁定、记录日志） ══════ */
+async function doSb(){
+  const btn=document.getElementById("sb");btn.disabled=true;btn.textContent="提交中...";
+  if(!C||isNaN(Number(C))){serr("班级信息异常，请返回重新选择",btn);return;}
+  const sid=crypto.randomUUID?crypto.randomUUID().slice(0,12):Math.random().toString(36).slice(2,14);
+  try{const{error}=await sb.from("submissions").insert({id:sid,class_id:Number(C),teacher_id:T?Number(T):null});if(error){serr("提交失败："+error.message,btn);return;}}catch(e){serr("网络错误，请重试",btn);return;}
+  const trs=[];for(let k in TS)if(TS[k]){const i=k.indexOf("_");trs.push({submission_id:sid,dimension:`${k.slice(0,i)}|${k.slice(i+1)}`,score:TS[k]});}
+  if(trs.length){try{const{error}=await sb.from("teacher_ratings").insert(trs);if(error){serr("教师评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
+  const crs=[];for(let k in CS)if(CS[k])crs.push({submission_id:sid,dimension:k,score:CS[k]});if(crs.length){try{const{error}=await sb.from("canteen_ratings").insert(crs);if(error){serr("饭堂评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
+  const drs=[];for(let k in DS)if(DS[k])drs.push({submission_id:sid,dimension:k,score:DS[k]});if(drs.length){try{const{error}=await sb.from("dormitory_ratings").insert(drs);if(error){serr("宿舍评分保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
+  let nm={};try{const r=await sb.from("teachers").select("id,name").eq("class_id",C);if(!r.error&&r.data)r.data.forEach(t=>nm[t.id]=t.name);}catch(e){}
+  const pts=[];for(let[tid,cmt]of Object.entries(TC))if(cmt)pts.push(`[教师:${nm[tid]||tid}] ${cmt}`);for(let[k,cmt]of Object.entries(CC))if(cmt)pts.push(`[饭堂:${k}] ${cmt}`);for(let[k,cmt]of Object.entries(DC))if(cmt)pts.push(`[宿舍:${k}] ${cmt}`);const gs=document.getElementById("gs")?.value?.trim()||"";if(gs)pts.push(`[综合] ${gs}`);
+  if(pts.length){try{const{error}=await sb.from("suggestions").insert({submission_id:sid,content:pts.join("\n")});if(error){serr("建议保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
+
+  // ★ 记录到提交日志
+  let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}
+  subLog.unshift({idx:subLog.length+1,cls:clsName||"未知",tcnt:Object.values(TS).filter(Boolean).length,time:new Date().toLocaleString("zh-CN")});
+
+  // ★ 展示成功 + 再填一份
+  const el=document.getElementById("sc");
+  el.innerHTML=`<div class="card"><div class="ok-box"><div class="ok">✓</div><h2>提交成功！（测试模式）</h2><p style="font-size:13px;color:var(--txt3);margin-top:8px">数据已写入 ${x(clsName)} · ${new Date().toLocaleString("zh-CN")}</p><button class="btn btn-p mt24" onclick="doAgain()">再填一份</button></div></div>`;
+  renderLog();
+}
+
+function serr(msg,btn){const el=document.getElementById("se");if(el){el.textContent=msg;el.classList.add("s");}if(btn){btn.disabled=false;btn.textContent="确认提交";}}
+
+/* ★ 重置状态，重新开始 */
+function doAgain(){
+  S=1;C=null;T=null;TS={};TC={};CS={};CC={};DS={};DC={};
+  go();
+}
+
+/* ══════ 提交日志渲染 ══════ */
+function renderLog(){
+  const area=document.getElementById("logArea");if(!area||!subLog.length){if(area)area.innerHTML="";return;}
+  let rows="";subLog.forEach(l=>{rows+=`<div class="log-item"><span class="log-idx">#${l.idx}</span><span class="log-cls">${x(l.cls)}</span><span class="log-meta">${l.tcnt}项评分</span><span class="log-ts">${l.time}</span></div>`;});
+  area.innerHTML=`<div class="log-card"><div class="log-hd">📝 提交记录 <span class="log-cnt">共 ${subLog.length} 次</span></div><div class="log-body">${rows}</div></div>`;
+}
+
+/* ══════ 启动 ══════ */
+go();
+</script>
+</body>
+</html>

@@ -215,6 +215,10 @@ tr:hover td{background:var(--blue-lt)}
 .bar-c .bar-fill{height:100%;border-radius:4px;transition:width .5s ease;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff;font-weight:600;min-width:0}
 .bar-c .bar-val{font-size:12px;color:var(--txt);font-weight:600;width:40px;flex-shrink:0;font-family:Consolas,Monaco,monospace}
 .b1{background:var(--blue)}.b2{background:var(--green)}.b3{background:var(--orange)}.b4{background:var(--purple)}.b5{background:#0ea5e9}
+/* 表格内评分条 */
+.row-bar{display:flex;align-items:center;gap:6px;position:relative}
+.row-bar-fill{height:6px;background:var(--blue);border-radius:3px;min-width:0;transition:width .4s ease}
+.row-bar b{font-size:13px;flex-shrink:0}
 .overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:768px){
   .bar-c .bar-lbl{width:64px;font-size:12px}
@@ -291,6 +295,7 @@ function renderDashboard(){
         <div class="sm-item${curPg==='export'?' on':''}" data-pg="export" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
+      <a href="https://pick12038.github.io/studio-survey/test.html" target="_blank" class="side-link" style="border-color:var(--red);color:var(--red)">🧪 测试学生端</a>
       <div class="side-foot">v2.5 · 画室专用</div>
     </aside>
     <div class="main">
@@ -318,7 +323,7 @@ async function loadData(force){
         sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher").order("class_id"),
         sb.from("teacher_ratings").select("submission_id,dimension,score"),
         sb.from("submissions").select("id,class_id,teacher_id,created_at"),
-        sb.from("suggestions").select("id,submission_id,content,created_at").order("id",{ascending:false}).limit(600),
+        sb.from("suggestions").select("id,submission_id,content,created_at").order("id",{ascending:false}).limit(2000),
         sb.from("submissions").select("*",{count:"exact",head:true}),
         sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content",""),
         sb.from("canteen_ratings").select("dimension,score"),
@@ -365,7 +370,7 @@ async function switchPg(pg){
 
 // ===== 概览 =====
 function renderOverview(el){
-  const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length,sc=ca.scnt;
+  const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length;
   let tAvg="-";if(ca.r&&ca.r.length)tAvg=ag(ca.r.map(r=>r.score));
   // 按班级汇总
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
@@ -375,7 +380,9 @@ function renderOverview(el){
     const cnt=classSubs[c.id]||0;
     const sids=new Set((ca.s||[]).filter(s=>s.class_id===c.id).map(s=>s.id));
     const scores=(ca.r||[]).filter(r=>sids.has(r.submission_id)).map(r=>r.score);
-    classRows+=`<tr><td>${x(c.name)}</td><td class="ta-c">${cnt}</td><td class="ta-c"><b>${ag(scores)}</b></td></tr>`;
+    const savg=ag(scores,true);
+    const pct=savg>0?Math.round((savg/5)*100):0;
+    classRows+=`<tr><td>${x(c.name)}</td><td class="ta-c">${cnt}</td><td class="ta-c"><div class="row-bar"><div class="row-bar-fill" style="width:${pct}%"></div><b>${ag(scores)}</b></div></td></tr>`;
   }
   // 维度均分 → 水平柱状图
   const barColors=["b1","b2","b3","b4","b5"];
@@ -384,25 +391,29 @@ function renderOverview(el){
     const avg=ag(sc,true);const pct=Math.min(100,Math.round((avg/5)*100));
     bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${ag(sc)}</div></div>`;
   });
-  // 综合建议
-  const sugHtml=renderSugs("综合");
+  // 综合建议（去前缀）
+  const sugs=pS("综合");
+  let sugHtml="";
+  if(sugs.length){
+    const prefix="[综合:";
+    sugs.forEach(s=>{const cl=s.lines.map(l=>l.startsWith(prefix)?l.slice(prefix.length).replace("]","").trim():l).filter(l=>l).join("<br>");sugHtml+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${cl}</div></div>`;});
+  }
   el.innerHTML=`
-    <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📊 数据总览</span><div><button class="btn-pm sm" onclick="switchPg('manage')">数据管理</button><button class="btn-pm sm" style="margin-left:8px" onclick="doExportAll()">导出全部</button></div></div>
+    <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📊 数据总览</span><div><button class="btn-pm sm" onclick="doExportAll()">导出全部</button></div></div>
       <div class="panel-body">
         <div class="kpi-row">
-          <div class="kpi k-b"><div class="kpi-label">总提交数</div><div class="kpi-n">${tc}</div><div class="kpi-sub">累计提交问卷</div></div>
-          <div class="kpi k-g"><div class="kpi-label">覆盖班级</div><div class="kpi-n">${cc}</div><div class="kpi-sub">参与评价班级</div></div>
-          <div class="kpi k-o"><div class="kpi-label">在职教师</div><div class="kpi-n">${tc2}</div><div class="kpi-sub">可评价教师</div></div>
-          <div class="kpi k-p"><div class="kpi-label">建议条数</div><div class="kpi-n">${sc}</div><div class="kpi-sub">含综合建议</div></div>
+          <div class="kpi k-b"><div class="kpi-label">总提交数</div><div class="kpi-n">${tc}</div><div class="kpi-sub">问卷提交</div></div>
+          <div class="kpi k-g"><div class="kpi-label">覆盖班级</div><div class="kpi-n">${cc}</div><div class="kpi-sub">参与班级</div></div>
+          <div class="kpi k-o"><div class="kpi-label">在职教师</div><div class="kpi-n">${tc2}</div><div class="kpi-sub">可评价对象</div></div>
         </div>
       </div>
     </div>
     <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📈 评分概览</span></div>
       <div class="panel-body">
         <div class="kpi-row">
-          <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'条评分':''}</div></div>
-          <div class="kpi k-g"><div class="kpi-label">饭堂均分</div><div class="kpi-n" id="kpi-canteen">-</div><div class="kpi-sub">加载中</div></div>
-          <div class="kpi k-o"><div class="kpi-label">宿舍均分</div><div class="kpi-n" id="kpi-dorm">-</div><div class="kpi-sub">加载中</div></div>
+          <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'条评分':'暂无'}</div></div>
+          <div class="kpi k-g"><div class="kpi-label">饭堂均分</div><div class="kpi-n" id="kpi-canteen">-</div><div class="kpi-sub">独立评分</div></div>
+          <div class="kpi k-o"><div class="kpi-label">宿舍均分</div><div class="kpi-n" id="kpi-dorm">-</div><div class="kpi-sub">独立评分</div></div>
           <div class="kpi k-p"><div class="kpi-label">评分人次</div><div class="kpi-n">${ca.r?ca.r.length:0}</div><div class="kpi-sub">累计评价次数</div></div>
         </div>
         <div style="margin:20px 0 8px"><span style="font-weight:600;font-size:14px">各维度平均分</span><span style="font-size:12px;color:var(--txt3);margin-left:8px">满分5分</span></div>
