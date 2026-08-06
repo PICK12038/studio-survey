@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>画室满意度调查</title>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>if(typeof supabase==='undefined'){document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');}</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18/dist/xlsx.full.min.js"></script>
 <style>
 /* ====== 全局基础 ====== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -230,6 +231,7 @@ const DM=["教学态度","课堂讲解","示范教学","课后辅导","作业点
 const sb=supabase.createClient(SB,SK);
 
 function go(){const h=location.hash.slice(1)||"s";
+  if(typeof supabase==='undefined'){document.getElementById("app").innerHTML=`<div class="container" style="text-align:center;padding:60px 20px"><h2>加载失败</h2><p style="color:var(--txt3);margin:12px 0">SDK 未能加载，请检查网络后刷新</p><button class="btn btn-p" style="width:auto;display:inline-flex" onclick="location.reload()">刷新重试</button></div>`;return;}
   if(h==="s"||h==="ok")srv();else if(h==="adm"||h==="admin"||h==="dash")admEnter();else srv();}
 let S=1,C=null,T=null,TS={},TC={},CS={},CC={},DS={},DC={};
 function isAdm(){return!!sessionStorage.getItem("adm");}
