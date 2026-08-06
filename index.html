@@ -289,17 +289,21 @@ function doLogout(){sessionStorage.removeItem("adm");location.hash="adm";}
 
 // 数据加载
 async function loadData(force){
-  if(!force&&ca._ts&&Date.now()-ca._ts<30000&&ca.c)return;
+  if(!force&&ca._ts&&Date.now()-ca._ts<30000&&ca.c&&ca.c.length)return;
   try{
-    const rs=await Promise.allSettled([
-      sb.from("classes").select("id,name").order("display_order"),
-      sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher").order("class_id"),
-      sb.from("teacher_ratings").select("submission_id,dimension,score"),
-      sb.from("submissions").select("id,class_id,teacher_id,created_at"),
-      sb.from("suggestions").select("*").order("id",{ascending:false}),
-      sb.from("submissions").select("*",{count:"exact",head:true}),
-      sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content","")
+    const rs=await Promise.race([
+      Promise.allSettled([
+        sb.from("classes").select("id,name").order("display_order"),
+        sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher").order("class_id"),
+        sb.from("teacher_ratings").select("submission_id,dimension,score"),
+        sb.from("submissions").select("id,class_id,teacher_id,created_at"),
+        sb.from("suggestions").select("*").order("id",{ascending:false}),
+        sb.from("submissions").select("*",{count:"exact",head:true}),
+        sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content","")
+      ]),
+      new Promise(r=>setTimeout(r,10000))
     ]);
+    if(!rs)return;
     ca.c=(rs[0].status==="fulfilled"&&!rs[0].value.error)?(rs[0].value.data||[]):[];
     ca.t=(rs[1].status==="fulfilled"&&!rs[1].value.error)?(rs[1].value.data||[]):[];
     ca.r=(rs[2].status==="fulfilled"&&!rs[2].value.error)?(rs[2].value.data||[]):[];
