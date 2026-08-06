@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>画室满意度调查</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ====== 全局基础 ====== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -197,12 +197,28 @@ tr:hover td{background:var(--blue-lt)}
 .side-link:hover{color:var(--blue);border-color:var(--blue);background:rgba(0,82,217,.04)}
 .student-link{font-size:13px;color:var(--blue);text-decoration:none;margin-right:18px;font-weight:500;transition:opacity .2s}
 .student-link:hover{opacity:.75}
+.refresh-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid var(--brd);background:var(--card);color:var(--txt2);cursor:pointer;font-size:14px;transition:all .2s;margin-right:4px}
+.refresh-btn:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-lt)}
+.refresh-btn.spin{animation:spin .6s ease-in-out}
+@keyframes spin{to{transform:rotate(360deg)}}
 .btn-sm{padding:4px 10px;font-size:12px;border-radius:5px;border:1px solid var(--brd);cursor:pointer;background:var(--bg);color:var(--txt);transition:all .15s}
 .btn-sm:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 .btn-d{color:var(--red);border-color:var(--red)}.btn-d:hover{background:var(--red);color:#fff}
 .mg-cb{width:16px;height:16px;cursor:pointer;accent-color:var(--blue)}
 #mgTbl tbody tr.sel{background:rgba(0,82,217,.06)}
 #mgTbl tbody tr.sel td{border-color:rgba(0,82,217,.12)}
+/* 水平柱状图 */
+.bar-c{display:flex;align-items:center;gap:10px;padding:6px 0}
+.bar-c .bar-lbl{font-size:13px;color:var(--txt2);width:80px;flex-shrink:0;text-align:right}
+.bar-c .bar-trk{flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden;position:relative}
+.bar-c .bar-fill{height:100%;border-radius:4px;transition:width .5s ease;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff;font-weight:600;min-width:0}
+.bar-c .bar-val{font-size:12px;color:var(--txt);font-weight:600;width:40px;flex-shrink:0;font-family:Consolas,Monaco,monospace}
+.b1{background:var(--blue)}.b2{background:var(--green)}.b3{background:var(--orange)}.b4{background:var(--purple)}.b5{background:#0ea5e9}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){
+  .bar-c .bar-lbl{width:64px;font-size:12px}
+  .overview-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body id="app"></body>
@@ -229,7 +245,7 @@ async function srv(){
   const h=location.hash.slice(1);if(h==="adm"||h==="admin"||h==="dash"){admEnter();return;}
   if(h==="ok"){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>提交成功！</h2><p class="sec-desc">感谢你的宝贵评价，画室因你而更好</p></div></div></div>`;return;}
   if(isDn()){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="ok-box"><div class="ok">✓</div><h2>问卷已提交</h2><p class="sec-desc">每台设备仅限提交一次，感谢参与</p></div></div></div>`;return;}
-  let data;try{const r=await sb.from("classes").select("*").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
+  let data;try{const r=await sb.from("classes").select("id,name,display_order").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
   document.getElementById("app").innerHTML=`<div class="container"><h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查</h1><p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
     <div class="steps sticky"><div class="step-d${S===1?' a':S>1?' d':''}">①选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">②评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">③饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">④确认提交</div></div>
     <div id="sc"></div></div>`;
@@ -237,7 +253,7 @@ async function srv(){
 }
 function st1(el,cls){let o='<option value="">请选择班级</option>';cls.forEach(c=>o+=`<option value="${c.id}">${x(c.name)}</option>`);el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🏫</span>所属班级</div><div class="fun-line">选个班级，开启你的评价之旅吧</div><select id="cs">${o}</select><div class="err" id="ce">请选择班级</div><button class="btn btn-p mt24" onclick="nx1()">下一步 →</button></div>`;}
 function nx1(){const v=document.getElementById("cs").value;if(!v){document.getElementById("ce").classList.add("s");return;}C=v;S=2;go();}
-async function st2(el){let data;try{const r=await sb.from("teachers").select("*").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p class="empty" style="text-align:center;padding:24px;color:var(--txt3)">该班级暂无教师数据，请联系管理员</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
+async function st2(el){let data;try{const r=await sb.from("teachers").select("id,name,subjects,is_head_teacher,class_id").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p class="empty" style="text-align:center;padding:24px;color:var(--txt3)">该班级暂无教师数据，请联系管理员</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
   let h=`<div class="card"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><div class="fun-line">给老师们打个分吧，他们会看到的！（大概）</div>`;
   data.forEach(t=>{h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;});h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
 function pkT(id){T=T===id?null:id;document.querySelectorAll('.tc-card').forEach(c=>c.classList.toggle('sel',c.id==='tc-'+T));}
@@ -273,12 +289,12 @@ function renderDashboard(){
         <div class="sm-item${curPg==='export'?' on':''}" data-pg="export" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
-      <div class="side-foot">v2.3 · 画室专用</div>
+      <div class="side-foot">v2.5 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
         <div class="topbar-l">首页 <span class="sep">›</span> <span id="breadcrumb">数据概览</span></div>
-        <div class="topbar-r"><a href="https://pick12038.github.io/studio-survey/" target="_blank" class="student-link">学生端</a><span class="time" id="liveTime"></span><span class="logout" onclick="doLogout()">退出登录</span></div>
+        <div class="topbar-r"><button class="refresh-btn" id="refreshBtn" onclick="doRefresh()" title="刷新数据">↻</button><a href="https://pick12038.github.io/studio-survey/" target="_blank" class="student-link">学生端</a><span class="time" id="liveTime"></span><span class="logout" onclick="doLogout()">退出登录</span></div>
       </header>
       <div class="content" id="dashBody"><div class="loading">加载中...</div></div>
     </div>
@@ -288,6 +304,7 @@ function renderDashboard(){
 }
 function updateTime(){const t=document.getElementById("liveTime");if(t)t.textContent=new Date().toLocaleString("zh-CN",{hour12:false});}
 function doLogout(){sessionStorage.removeItem("adm");location.hash="adm";}
+async function doRefresh(){const btn=document.getElementById("refreshBtn");if(btn){btn.classList.add("spin");setTimeout(()=>btn.classList.remove("spin"),600);}await loadData(true);switchPg(curPg);}
 
 // 数据加载（含10秒超时保护 + 饭堂/宿舍缓存）
 async function loadData(force){
@@ -299,7 +316,7 @@ async function loadData(force){
         sb.from("teachers").select("id,name,class_id,subjects,is_head_teacher").order("class_id"),
         sb.from("teacher_ratings").select("submission_id,dimension,score"),
         sb.from("submissions").select("id,class_id,teacher_id,created_at"),
-        sb.from("suggestions").select("*").order("id",{ascending:false}),
+        sb.from("suggestions").select("id,submission_id,content,created_at").order("id",{ascending:false}).limit(600),
         sb.from("submissions").select("*",{count:"exact",head:true}),
         sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content",""),
         sb.from("canteen_ratings").select("dimension,score"),
@@ -358,8 +375,13 @@ function renderOverview(el){
     const scores=(ca.r||[]).filter(r=>sids.has(r.submission_id)).map(r=>r.score);
     classRows+=`<tr><td>${x(c.name)}</td><td class="ta-c">${cnt}</td><td class="ta-c"><b>${ag(scores)}</b></td></tr>`;
   }
-  // 维度均分
-  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p?p.dim===d:r.dimension===d;}).map(r=>r.score);dr+=`<tr><td>${d}</td><td class="ta-c"><b>${ag(sc)}</b></td><td class="ta-c">${sc.length}</td></tr>`;});
+  // 维度均分 → 水平柱状图
+  const barColors=["b1","b2","b3","b4","b5"];
+  let bars="";DM.forEach((d,i)=>{
+    const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p?p.dim===d:r.dimension===d;}).map(r=>r.score);
+    const avg=ag(sc,true);const pct=Math.min(100,Math.round((avg/5)*100));
+    bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${ag(sc)}</div></div>`;
+  });
   // 综合建议
   const sugHtml=renderSugs("综合");
   el.innerHTML=`
@@ -376,15 +398,16 @@ function renderOverview(el){
     <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📈 评分概览</span></div>
       <div class="panel-body">
         <div class="kpi-row">
-          <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'人次':''}</div></div>
+          <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'条评分':''}</div></div>
           <div class="kpi k-g"><div class="kpi-label">饭堂均分</div><div class="kpi-n" id="kpi-canteen">-</div><div class="kpi-sub">加载中</div></div>
           <div class="kpi k-o"><div class="kpi-label">宿舍均分</div><div class="kpi-n" id="kpi-dorm">-</div><div class="kpi-sub">加载中</div></div>
+          <div class="kpi k-p"><div class="kpi-label">评分人次</div><div class="kpi-n">${ca.r?ca.r.length:0}</div><div class="kpi-sub">累计评价次数</div></div>
         </div>
-        <div class="sec-desc" style="margin:20px 0 8px;font-weight:600">各维度平均分</div>
-        <div class="tbl-wrap"><table><thead><tr><th>评价维度</th><th class="ta-c">均分</th><th class="ta-c">人次</th></tr></thead><tbody>${dr}</tbody></table></div>
+        <div style="margin:20px 0 8px"><span style="font-weight:600;font-size:14px">各维度平均分</span><span style="font-size:12px;color:var(--txt3);margin-left:8px">满分5分</span></div>
+        <div class="panel" style="border:1px solid var(--brd);box-shadow:none;background:var(--card)"><div class="panel-body">${bars||'<div class="empty">暂无评分数据</div>'}</div></div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="overview-grid">
       <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">📋 按班级汇总</span></div><div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th class="ta-c">提交数</th><th class="ta-c">教师均分</th></tr></thead><tbody>${classRows||'<tr><td colspan="3" class="ta-c" style="color:var(--txt3)">暂无数据</td></tr>'}</tbody></table></div></div></div>
       <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">💬 综合建议</span></div><div class="panel-body">${sugHtml||'<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>'}</div></div>
     </div>`;
@@ -405,7 +428,7 @@ async function renderManage(el){
   const from=(mgPg-1)*mgSize,to=from+mgSize-1;
   let pgSubs=[],pgTotal=0,pgErr="";
   try{
-    const r=await sb.from("submissions").select("*",{count:"exact"}).order("created_at",{ascending:false}).range(from,to);
+    const r=await sb.from("submissions").select("id,class_id,created_at",{count:"exact"}).order("created_at",{ascending:false}).range(from,to);
     if(!r.error){pgSubs=r.data||[];pgTotal=r.count||0;}else pgErr=r.error.message||"查询失败";
     mgTotal=pgTotal;
   }catch(e){pgErr=e.message||"网络异常";}
