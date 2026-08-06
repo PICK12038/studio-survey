@@ -221,6 +221,8 @@ function isDn(){return!!localStorage.getItem("dn")&&!isAdm();}
 function ag(s){return s.length?(s.reduce((a,b)=>a+b,0)/s.length).toFixed(1):"-";}
 function x(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
 function dt(){return new Date().toISOString().slice(0,10);}
+// 解析教师评分维度: "teacherId|dimension" → {tid, dim}
+function pd(d){if(!d)return null;const i=d.indexOf('|');return i>0?{tid:Number(d.slice(0,i)),dim:d.slice(i+1)}:null;}
 
 // ══════════ 学生问卷 ══════════
 async function srv(){
@@ -271,7 +273,7 @@ function renderDashboard(){
         <div class="sm-item${curPg==='export'?' on':''}" data-pg="export" onclick="switchPg('export')"><span class="dot"></span>导出数据</div>
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
-      <div class="side-foot">v2.2 · 画室专用</div>
+      <div class="side-foot">v2.3 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
@@ -287,7 +289,7 @@ function renderDashboard(){
 function updateTime(){const t=document.getElementById("liveTime");if(t)t.textContent=new Date().toLocaleString("zh-CN",{hour12:false});}
 function doLogout(){sessionStorage.removeItem("adm");location.hash="adm";}
 
-// 数据加载
+// 数据加载（含10秒超时保护 + 饭堂/宿舍缓存）
 async function loadData(force){
   if(!force&&ca._ts&&Date.now()-ca._ts<30000&&ca.c&&ca.c.length)return;
   try{
@@ -299,26 +301,32 @@ async function loadData(force){
         sb.from("submissions").select("id,class_id,teacher_id,created_at"),
         sb.from("suggestions").select("*").order("id",{ascending:false}),
         sb.from("submissions").select("*",{count:"exact",head:true}),
-        sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content","")
+        sb.from("suggestions").select("*",{count:"exact",head:true}).neq("content",""),
+        sb.from("canteen_ratings").select("dimension,score"),
+        sb.from("dormitory_ratings").select("dimension,score")
       ]),
       new Promise(r=>setTimeout(r,10000))
     ]);
     if(!rs)return;
-    ca.c=(rs[0].status==="fulfilled"&&!rs[0].value.error)?(rs[0].value.data||[]):[];
-    ca.t=(rs[1].status==="fulfilled"&&!rs[1].value.error)?(rs[1].value.data||[]):[];
-    ca.r=(rs[2].status==="fulfilled"&&!rs[2].value.error)?(rs[2].value.data||[]):[];
-    ca.s=(rs[3].status==="fulfilled"&&!rs[3].value.error)?(rs[3].value.data||[]):[];
-    ca.sg=(rs[4].status==="fulfilled"&&!rs[4].value.error)?(rs[4].value.data||[]):[];
-    ca.tot=(rs[5].status==="fulfilled"&&!rs[5].value.error)?rs[5].value.count||0:0;
-    ca.scnt=(rs[6].status==="fulfilled"&&!rs[6].value.error)?rs[6].value.count||0:0;
+    ca.c=(rs[0].status==="fulfilled"&&!rs[0].value.error)?(rs[0].value.data||[]):ca.c||[];
+    ca.t=(rs[1].status==="fulfilled"&&!rs[1].value.error)?(rs[1].value.data||[]):ca.t||[];
+    ca.r=(rs[2].status==="fulfilled"&&!rs[2].value.error)?(rs[2].value.data||[]):ca.r||[];
+    ca.s=(rs[3].status==="fulfilled"&&!rs[3].value.error)?(rs[3].value.data||[]):ca.s||[];
+    ca.sg=(rs[4].status==="fulfilled"&&!rs[4].value.error)?(rs[4].value.data||[]):ca.sg||[];
+    ca.tot=(rs[5].status==="fulfilled"&&!rs[5].value.error)?rs[5].value.count||0:ca.tot||0;
+    ca.scnt=(rs[6].status==="fulfilled"&&!rs[6].value.error)?rs[6].value.count||0:ca.scnt||0;
+    ca.cr=(rs[7].status==="fulfilled"&&!rs[7].value.error)?(rs[7].value.data||[]):ca.cr||[];
+    ca.dr=(rs[8].status==="fulfilled"&&!rs[8].value.error)?(rs[8].value.data||[]):ca.dr||[];
     ca._ts=Date.now();
-  }catch(e){ca={_ts:0};}
+  }catch(e){ca._ts=0;}
 }
 
-// 建议解析
+// 建议解析（缓存 split 结果避免重复计算）
 function pS(cat,cid){
-  if(cat==="教师"&&cid){const sids=new Set((ca.s||[]).filter(s=>s.class_id==cid).map(s=>s.id));return(ca.sg||[]).filter(s=>{const lines=(s.content||"").split("\n");return lines.some(l=>l.startsWith("[教师:"))&&sids.has(s.submission_id);}).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith("[教师:"))};});}
-  return(ca.sg||[]).filter(s=>{const lines=(s.content||"").split("\n");return lines.some(l=>l.startsWith(`[${cat}:`));}).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines:lines.filter(l=>l.startsWith(`[${cat}:`))};});
+  const prefix=`[${cat}:`;
+  const sugs=(ca.sg||[]).map(s=>{const lines=(s.content||"").split("\n");return{...s,lines,flt:lines.filter(l=>l.startsWith(prefix))};});
+  if(cat==="教师"&&cid){const sids=new Set((ca.s||[]).filter(s=>s.class_id==cid).map(s=>s.id));return sugs.filter(s=>s.flt.length&&sids.has(s.submission_id));}
+  return sugs.filter(s=>s.flt.length);
 }
 function mS(sid){const s=(ca.s||[]).find(s=>s.id===sid);if(!s)return sid;const c=(ca.c||[]).find(c=>c.id===s.class_id);let m=c?c.name:"";if(s.teacher_id){const t=(ca.t||[]).find(t=>t.id===s.teacher_id);m+=" · "+(t?t.name:"");}return m+" · "+new Date(s.created_at).toLocaleString("zh-CN");}
 // 页面切换
@@ -351,7 +359,7 @@ function renderOverview(el){
     classRows+=`<tr><td>${x(c.name)}</td><td class="ta-c">${cnt}</td><td class="ta-c"><b>${ag(scores)}</b></td></tr>`;
   }
   // 维度均分
-  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{if(!r||!r.dimension)return false;const i=r.dimension.indexOf('|');return(i>0?r.dimension.slice(i+1):r.dimension)===d;}).map(r=>r.score);dr+=`<tr><td>${d}</td><td class="ta-c"><b>${ag(sc)}</b></td><td class="ta-c">${sc.length}</td></tr>`;});
+  let dr="";DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p?p.dim===d:r.dimension===d;}).map(r=>r.score);dr+=`<tr><td>${d}</td><td class="ta-c"><b>${ag(sc)}</b></td><td class="ta-c">${sc.length}</td></tr>`;});
   // 综合建议
   const sugHtml=renderSugs("综合");
   el.innerHTML=`
@@ -383,7 +391,7 @@ function renderOverview(el){
   loadRatingAvg("canteen_ratings").then(v=>{const e=document.getElementById("kpi-canteen");if(e)e.textContent=v;});
   loadRatingAvg("dormitory_ratings").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
 }
-async function loadRatingAvg(table){try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
+async function loadRatingAvg(table){const cache=table==="canteen_ratings"?ca.cr:ca.dr;if(cache&&cache.length)return ag(cache.map(d=>d.score));try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
 
 // ===== 数据管理 =====
 let mgSel=[],mgPg=1,mgTotal=0;const mgSize=20;
@@ -394,14 +402,14 @@ function updateSelUI(){const n=mgSel.length;document.getElementById('mgSelCnt').
 async function renderManage(el){
   await loadData(true);
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
-  // 分页取 submissions
   const from=(mgPg-1)*mgSize,to=from+mgSize-1;
-  let pgSubs=[],pgTotal=0;
+  let pgSubs=[],pgTotal=0,pgErr="";
   try{
     const r=await sb.from("submissions").select("*",{count:"exact"}).order("created_at",{ascending:false}).range(from,to);
-    if(!r.error){pgSubs=r.data||[];pgTotal=r.count||0;}
+    if(!r.error){pgSubs=r.data||[];pgTotal=r.count||0;}else pgErr=r.error.message||"查询失败";
     mgTotal=pgTotal;
-  }catch(e){}
+  }catch(e){pgErr=e.message||"网络异常";}
+  if(pgErr){el.innerHTML=`<div class="panel"><div class="panel-body"><div class="bnr">数据加载失败：${x(pgErr)}<br><a href="javascript:switchPg('manage')">点击重试</a></div></div></div>`;return;}
   let rows="";
   pgSubs.forEach(s=>{
     const ts=(ca.r||[]).filter(r=>r.submission_id===s.id).length;
@@ -441,13 +449,13 @@ async function delSel(){
 async function delSubs(sids){
   const msg=document.createElement('div');msg.className='bnr';msg.textContent='正在删除...';const el=document.getElementById('dashBody');if(el)el.prepend(msg);
   try{
-    for(let sid of sids){
-      await sb.from("teacher_ratings").delete().eq("submission_id",sid);
-      await sb.from("canteen_ratings").delete().eq("submission_id",sid);
-      await sb.from("dormitory_ratings").delete().eq("submission_id",sid);
-      await sb.from("suggestions").delete().eq("submission_id",sid);
-      await sb.from("submissions").delete().eq("id",sid);
-    }
+    await Promise.all([
+      sb.from("teacher_ratings").delete().in("submission_id",sids),
+      sb.from("canteen_ratings").delete().in("submission_id",sids),
+      sb.from("dormitory_ratings").delete().in("submission_id",sids),
+      sb.from("suggestions").delete().in("submission_id",sids),
+      sb.from("submissions").delete().in("id",sids)
+    ]);
     mgSel=[];
     msg.textContent=`成功删除 ${sids.length} 条记录`;msg.style.color='var(--green)';
     setTimeout(()=>{switchPg('manage');},600);
@@ -464,7 +472,7 @@ function renderTeacher(el){
     <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select></div>
     <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
   DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody>';
-  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{if(!r||!r.dimension)return false;const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
+  for(let t of ftd){const si=sm[t.id]||[];h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${x(t.name)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${si.length}</td>`;let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.tid===t.id&&p.dim===d&&si.includes(r.submission_id);}).map(r=>r.score);h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
   h+=`</tbody></table></div></div>`;
   h+=`<div class="sug-lst"><h4>📝 学生对教师的建议${tf?'（'+cm[tf]+'）':'（全部班级）'}</h4>${renderSugs("教师",tf)}</div></div>`;
   el.innerHTML=h;
@@ -473,8 +481,11 @@ function filterClass(v){tf=v;renderTeacher(document.getElementById("dashBody"));
 
 // ===== 饭堂/宿舍评价 =====
 async function renderRating(el,table,title,ico,cat){
-  let data;try{const r=await sb.from(table).select("dimension,score");if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="panel"><div class="panel-body"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:switchPg('${cat==='饭堂'?'canteen':'dormitory'}')">重试</a></div></div></div>`;return;}
-  const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
+  const cache=table==="canteen_ratings"?ca.cr:ca.dr;
+  const data=cache&&cache.length?cache:[];
+  // 缓存可能过期，保底查询
+  if(!data.length){try{const r=await sb.from(table).select("dimension,score");if(!r.error)data.push(...(r.data||[]));}catch(e){}}
+  const g={};data.forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
   let rs="";for(let k in g)rs+=`<tr><td>${k}</td><td class="ta-c"><b>${ag(g[k])}</b></td><td class="ta-c">${g[k].length}</td></tr>`;
   el.innerHTML=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">${ico} ${title}评价</span><button class="btn-pm sm" onclick="doExportRating('${table}','${title}','${cat}')">导出${title}</button></div>
     <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>评价维度</th><th class="ta-c">均分</th><th class="ta-c">评价人次</th></tr></thead><tbody>${rs}</tbody></table></div></div>
@@ -502,9 +513,14 @@ function renderSugs(cat,cid){
 }
 
 // ===== 导出函数 =====
-async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter((r)=>{if(!r||!r.dimension)return false;const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");for(let[tbl,ttl]of[["canteen_ratings","饭堂评价"],["dormitory_ratings","宿舍评价"]]){let d;try{const r=await sb.from(tbl).select("dimension,score");if(!r.error)d=r.data;}catch(e){}const g={};(d||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
-async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter((r)=>{if(!r||!r.dimension)return false;const idx=r.dimension.indexOf('|');if(idx>0){return Number(r.dimension.slice(0,idx))===t.id&&r.dimension.slice(idx+1)===d;}return r.dimension===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
-async function doExportRating(table,title,cat){let data;try{const r=await sb.from(table).select("dimension,score");if(!r.error)data=r.data;}catch(e){}const g={};(data||[]).forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});const rs=[["维度","均分","人次"]];for(let k in g)rs.push([k,ag(g[k]),g[k].length]);rs.push([],["— 相关建议 —"]);pS(cat).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),title);XLSX.writeFile(wb,`画室_${title}_${dt()}.xlsx`);}
+async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.tid===t.id&&p.dim===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");
+  for(let[tbl,ttl,ck]of[["canteen_ratings","饭堂评价","cr"],["dormitory_ratings","宿舍评价","dr"]]){
+    const d=ca[ck]||[];
+    const g={};d.forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);
+  }XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
+async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.tid===t.id&&p.dim===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
+async function doExportRating(table,title,cat){const cache=table==="canteen_ratings"?ca.cr:ca.dr;const data=cache&&cache.length?cache:[];const g={};data.forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});const rs=[["维度","均分","人次"]];for(let k in g)rs.push([k,ag(g[k]),g[k].length]);rs.push([],["— 相关建议 —"]);pS(cat).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),title);XLSX.writeFile(wb,`画室_${title}_${dt()}.xlsx`);}
 
 window.addEventListener("hashchange",go);go();
 </script>
