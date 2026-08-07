@@ -35,8 +35,6 @@ select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px var(--bl
 .sbtn.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600}
 .tc-card{border:1px solid var(--brd);border-radius:var(--rds);padding:16px;margin-bottom:12px;background:#fafbfc;transition:all .15s}
 .tc-card:hover{border-color:#b8c5e0}
-.tc-card.sel{border-color:var(--blue);background:var(--blue-lt)}
-.tc-card .tch{display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer}
 .tc-card .tname{font-weight:600;font-size:15px}
 .tc-card .tsub{font-size:11px;color:var(--txt3)}
 .badge{font-size:10px;padding:1px 7px;border-radius:10px;background:#fff3e0;color:#e65100;flex-shrink:0;font-weight:500;border:1px solid #ffe0b2}
@@ -69,6 +67,20 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 /* ══════ 测试页面专属 ══════ */
 .test-banner{background:var(--red);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:0;z-index:30}
 .test-banner .test-warn{background:rgba(255,255,255,.2);border-radius:3px;padding:2px 8px;font-size:10px;letter-spacing:.5px}
+/* 教师卡片折叠 */
+.tc-card .tc-body{display:none;padding-top:6px;border-top:1px solid var(--brd2);margin-top:12px}
+.tc-card.exp .tc-body{display:block}
+.tc-card .tc-hd{cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tc-card .tname{font-weight:600;font-size:15px}
+.tc-card .tsub{font-size:11px;color:var(--txt3)}
+.tc-card .tc-prog{font-size:11px;color:var(--txt3);margin-left:auto;flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.tc-card .tc-prog.done{color:var(--green)}
+.tc-card .tc-expand{font-size:12px;color:var(--txt3);transition:transform .2s;flex-shrink:0}
+.tc-card.exp .tc-expand{transform:rotate(180deg)}
+/* 确认页分数明细 */
+.cfm-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.cfm-tbl td{padding:6px 8px;border-bottom:1px solid var(--brd2)}
+.cfm-tbl td:last-child{text-align:right;font-weight:600;color:var(--blue)}
 .log-card{background:var(--card);border-radius:var(--rds);padding:0;margin-top:16px;box-shadow:var(--sh);border:1px solid var(--brd)}
 .log-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--brd);font-size:14px;font-weight:600}
 .log-hd .log-cnt{font-size:12px;color:var(--txt3);font-weight:400}
@@ -129,6 +141,14 @@ function ag(s){return s.length?(s.reduce((a,b)=>a+b,0)/s.length).toFixed(1):"-";
 // ★ 测试版：永远允许提交
 function isDn(){return false;}
 
+/* ══════ localStorage 草稿系统 ══════ */
+const DK="survey_draft_v1";
+function saveDraft(){const d={S,C,T,TS,TC,CS,CC,DS,DC,subLog,_ts:Date.now()};try{localStorage.setItem(DK,JSON.stringify(d));}catch(e){}}
+function loadDraft(){try{const r=localStorage.getItem(DK);if(!r)return null;const d=JSON.parse(r);if(Date.now()-d._ts>86400000){localStorage.removeItem(DK);return null;}return d;}catch(e){return null;}}
+function clearDraft(){try{localStorage.removeItem(DK);}catch(e){}}
+function hasDraft(){return !!loadDraft();}
+function restoreDraft(){const d=loadDraft();if(!d)return;S=d.S;C=d.C;T=d.T;TS=d.TS||{};TC=d.TC||{};CS=d.CS||{};CC=d.CC||{};DS=d.DS||{};DC=d.DC||{};subLog=d.subLog||[];go();}
+
 async function go(){
   const app=document.getElementById("app");
   if(typeof supabase==='undefined'){app.innerHTML=`<div class="container" style="text-align:center;padding:60px 20px"><h2>加载失败</h2><p style="color:var(--txt3);margin:12px 0">SDK 未能加载，请检查网络后刷新</p><button class="btn btn-p" style="width:auto;display:inline-flex" onclick="location.reload()">刷新重试</button></div>`;return;}
@@ -138,9 +158,11 @@ async function go(){
 async function srv(){
   let data;try{const r=await sb.from("classes").select("id,name,display_order").order("display_order");if(r.error)throw r.error;data=r.data;}catch(e){document.getElementById("app").innerHTML=`<div class="container"><div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:location.reload()">点击重试</a></div></div></div>`;return;}
   const app=document.getElementById("app");
+  const draft=hasDraft()?loadDraft():null;
   app.innerHTML=`<div class="container">
     <h1 style="font-size:22px;margin-bottom:2px">📋 画室满意度调查 <span class="badge-test" style="vertical-align:middle;margin-left:6px">TEST</span></h1>
     <p style="color:var(--txt3);font-size:13px;margin-bottom:20px">你的每一分，都让我们变得更好</p>
+    ${S===1&&draft?`<div class="bnr" style="background:var(--blue-lt);border-color:#b8c5e0;color:var(--blue);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>📋 检测到未完成的填写记录（${new Date(draft._ts).toLocaleString("zh-CN")}）</span><div style="display:flex;gap:8px"><button class="btn btn-p" style="width:auto;padding:6px 16px;font-size:12px" onclick="restoreDraft()">恢复继续</button><button class="btn btn-o" style="width:auto;padding:6px 16px;font-size:12px" onclick="clearDraft();go()">忽略</button></div></div>`:""}
     <div class="steps sticky"><div class="step-d${S===1?' a':S>1?' d':''}">①选择班级</div><div class="step-d${S===2?' a':S>2?' d':''}">②评价教师</div><div class="step-d${S===3?' a':S>3?' d':''}">③饭堂宿舍</div><div class="step-d${S===4?' a':S>4?' d':''}">④确认提交</div></div>
     <div id="sc"></div><div id="logArea"></div></div>`;
   const el=document.getElementById("sc");
@@ -150,24 +172,44 @@ async function srv(){
 
 /* ══════ 步骤① 选班级 ══════ */
 function st1(el,cls){let o='<option value="">请选择班级</option>';cls.forEach(c=>o+=`<option value="${c.id}">${x(c.name)}</option>`);el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🏫</span>所属班级</div><div class="fun-line">选个班级，开启你的评价之旅吧</div><select id="cs">${o}</select><div class="err" id="ce">请选择班级</div><button class="btn btn-p mt24" onclick="nx1()">下一步 →</button></div>`;}
-function nx1(){const v=document.getElementById("cs").value;if(!v){document.getElementById("ce").classList.add("s");return;}C=v;S=2;go();}
+function nx1(){const v=document.getElementById("cs").value;if(!v){document.getElementById("ce").classList.add("s");return;}C=v;S=2;saveDraft();go();}
 
 /* ══════ 步骤② 评价教师 ══════ */
 async function st2(el){let data;try{const r=await sb.from("teachers").select("id,name,subjects,is_head_teacher,class_id").eq("class_id",C).order("is_head_teacher",{ascending:false});if(r.error)throw r.error;data=r.data;}catch(e){el.innerHTML=`<div class="card"><div class="bnr">加载失败：${x(e.message)}<br><a href="javascript:go()">重试</a></div></div>`;return;}if(!data||!data.length){el.innerHTML=`<div class="card tc"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><p style="text-align:center;padding:24px;color:var(--txt3)">该班级暂无教师数据</p><button class="btn btn-o mt16" onclick="S=1;go()">← 返回</button></div>`;return;}
-  let h=`<div class="card"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><div class="fun-line">给老师们打个分吧（测试模式下可以反复提交哦）</div>`;
-  data.forEach(t=>{h+=`<div class="tc-card${T==t.id?' sel':''}" id="tc-${t.id}"><div class="tch" onclick="pkT(${t.id})"><span class="tname">${x(t.name)}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}</div>`;DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div>`;});h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
-function pkT(id){T=T===id?null:id;document.querySelectorAll('.tc-card').forEach(c=>c.classList.toggle('sel',c.id==='tc-'+T));}
-function stS(tid,dim,score,btn){TS[tid+"_"+dim]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
-function nx2(){document.querySelectorAll('.cmt[data-tid]').forEach(ta=>{TC[ta.dataset.tid]=ta.value.trim();});if(!Object.values(TS).some(Boolean)){document.getElementById("te").classList.add("s");return;}S=3;go();}
+  // 计算每个教师的进度 + 判断是否默认展开
+  const tp={};let firstExp=null;data.forEach(t=>{let done=0;DM.forEach(d=>{if(TS[t.id+"_"+d])done++;});tp[t.id]={done,total:DM.length,all:done===DM.length};if(!firstExp&&!tp[t.id].all)firstExp=t.id;});
+  if(!firstExp&&data.length)firstExp=data[0].id;
+  let h=`<div class="card"><div class="sec-tit"><span class="ico">👨‍🏫</span>评价教师</div><div class="fun-line">点击教师卡片展开评分（测试模式下可以反复提交）</div>`;
+  data.forEach(t=>{const p=tp[t.id];const expanded=(typeof window.__tcExp==='object'&&window.__tcExp[t.id]!==undefined)?window.__tcExp[t.id]:(t.id===firstExp);
+    h+=`<div class="tc-card${expanded?' exp':''}${p.all?' done-c':''}" id="tc-${t.id}" style="${p.all?'border-color:var(--green);background:#f6fdf9':''}"><div class="tc-hd" onclick="tgTc(${t.id})"><span class="tname">${x(t.name)}${p.all?' <span style="color:var(--green)">✅</span>':''}</span>${t.subjects?`<span class="tsub">${x(t.subjects)}</span>`:''}${t.is_head_teacher?'<span class="badge">班主任</span>':''}<span class="tc-prog${p.all?' done':''}">${p.done}/${p.total} 项已评</span><span class="tc-expand">▼</span></div><div class="tc-body">`;
+    DM.forEach(d=>{const v=TS[t.id+"_"+d];h+=`<div class="score-row"><span class="dim-label">${d}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stS(${t.id},'${d}',${i},this)">${i}</button>`;h+=`</div></div>`;});
+    h+=`<textarea class="cmt" placeholder="对该教师说点什么吧（选填）" data-tid="${t.id}">${TC[t.id]||""}</textarea></div></div>`;});
+  h+=`<div class="err${Object.values(TS).some(Boolean)?'':' s'}" id="te">请至少为一位教师评分</div><div class="row2 mt16"><button class="btn btn-o" onclick="S=1;go()">← 上一步</button><button class="btn btn-p" onclick="nx2()">下一步 →</button></div></div>`;el.innerHTML=h;}
+function tgTc(id){const c=document.getElementById("tc-"+id);if(c)c.classList.toggle("exp");if(!window.__tcExp)window.__tcExp={};window.__tcExp[id]=c.classList.contains("exp");}
+function stS(tid,dim,score,btn){TS[tid+"_"+dim]=score;const r=btn.closest(".score-row");if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));const card=btn.closest(".tc-card");if(card){const tbs=card.querySelectorAll(".score-row");let done=0;tbs.forEach(row=>{if(row.querySelector(".sbtn.on"))done++;});const prog=card.querySelector(".tc-prog");if(prog){prog.textContent=done+"/"+tbs.length+" 项已评";if(done===tbs.length){prog.classList.add("done");card.style.borderColor="var(--green)";card.style.background="#f6fdf9";const nm=card.querySelector(".tname");if(nm&&!nm.querySelector("span"))nm.innerHTML+=' <span style="color:var(--green)">✅</span>';}}}}
+function nx2(){document.querySelectorAll('.cmt[data-tid]').forEach(ta=>{TC[ta.dataset.tid]=ta.value.trim();});if(!Object.values(TS).some(Boolean)){document.getElementById("te").classList.add("s");return;}S=3;saveDraft();go();}
 
 /* ══════ 步骤③ 饭堂宿舍 ══════ */
 function st3(el){el.innerHTML=`<div class="card"><div class="sec-tit"><span class="ico">🍽️</span>饭堂评价</div><div class="fun-line">食堂阿姨的手抖不抖？来评个分！</div>${sg("c","饭菜口味",CS,CC)}${sg("c","服务态度",CS,CC)}</div><div class="card"><div class="sec-tit"><span class="ico">🏠</span>宿舍评价</div><div class="fun-line">宿舍生活怎么样？宿管阿姨等你评价~</div>${sg("d","宿舍管理",DS,DC)}${sg("d","宿管服务",DS,DC)}</div><div class="card"><div class="sec-tit"><span class="ico">💬</span>个人建议</div><div class="fun-line">还有什么想说的？畅所欲言吧！</div><textarea class="big" id="gs" placeholder="请留下您的宝贵建议（选填）"></textarea></div><div class="row2 mb16"><button class="btn btn-o" onclick="S=2;go()">← 上一步</button><button class="btn btn-p" onclick="nx3()">下一步 →</button></div>`;}
 function sg(pf,lb,ss,cc){const v=ss[lb];let h=`<div class="score-row"><span class="dim-label">${lb}</span><div class="score-btns">`;for(let i=1;i<=10;i++)h+=`<button class="sbtn${v==i?' on':''}" data-score="${i}" onclick="stG('${pf}','${lb}',${i},this)">${i}</button>`;return h+`</div></div><textarea class="cmt" placeholder="${lb}方面有什么建议？（选填）" data-gp="${pf}_${lb}">${cc[lb]||""}</textarea>`;}
 function stG(pf,lb,score,btn){if(pf==="c")CS[lb]=score;else DS[lb]=score;const r=btn.closest('.score-row');if(r)r.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.score===score));}
-function nx3(){document.querySelectorAll('.cmt[data-gp]').forEach(ta=>{const[p,k]=ta.dataset.gp.split("_");if(p==="c")CC[k]=ta.value.trim();else DC[k]=ta.value.trim();});S=4;go();}
+function nx3(){document.querySelectorAll('.cmt[data-gp]').forEach(ta=>{const[p,k]=ta.dataset.gp.split("_");if(p==="c")CC[k]=ta.value.trim();else DC[k]=ta.value.trim();});S=4;saveDraft();go();}
 
 /* ══════ 步骤④ 确认提交 ══════ */
-async function st4(el){let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}let s=`<p><b>班级：</b>${x(clsName)||"未知"}</p><p><b>教师已评：</b>${Object.values(TS).filter(Boolean).length} 项</p><p><b>饭堂已评：</b>${Object.values(CS).filter(Boolean).length} 项</p><p><b>宿舍已评：</b>${Object.values(DS).filter(Boolean).length} 项</p>`;if(Object.values(TC).some(Boolean)||Object.values(CC).some(Boolean)||Object.values(DC).some(Boolean))s+=`<p><b>建议：</b>已填写</p>`;el.innerHTML=`<div class="card tc"><div class="sec-tit" style="justify-content:center"><span class="ico">✅</span>确认提交</div><div class="fun-line">测试模式：提交后可继续填写下一份</div><div style="text-align:left;margin:16px 0;font-size:14px;line-height:2.2">${s}</div><div class="row2 mb16"><button class="btn btn-o" onclick="S=3;go()">← 返回修改</button><button class="btn btn-p" id="sb" onclick="doSb()">确认提交</button></div><div class="err mt8" id="se"></div></div>`;}
+async function st4(el){let clsName="",tnames={};try{const[cr,tr]=await Promise.all([sb.from("classes").select("name").eq("id",C).single(),sb.from("teachers").select("id,name").eq("class_id",C)]);if(!cr.error&&cr.data)clsName=cr.data.name;if(!tr.error&&tr.data)tr.data.forEach(t=>tnames[t.id]=t.name);}catch(e){}
+  // 教师评分明细
+  let trHtml="";for(let k in TS)if(TS[k]){const i=k.indexOf("_");const tid=k.slice(0,i),dim=k.slice(i+1);trHtml+=`<tr><td>${x(tnames[tid]||tid)}</td><td>${dim}</td><td>${TS[k]}分</td></tr>`;}
+  // 饭堂/宿舍明细
+  let cdHtml="";for(let k in CS)if(CS[k])cdHtml+=`<tr><td>饭堂</td><td>${k}</td><td>${CS[k]}分</td></tr>`;
+  for(let k in DS)if(DS[k])cdHtml+=`<tr><td>宿舍</td><td>${k}</td><td>${DS[k]}分</td></tr>`;
+  // 建议
+  let sugTxt="";Object.entries(TC).forEach(([tid,cmt])=>{if(cmt)sugTxt+=`<p>· <b>${x(tnames[tid]||tid)}：</b>${x(cmt)}</p>`;});Object.entries(CC).forEach(([k,cmt])=>{if(cmt)sugTxt+=`<p>· <b>饭堂-${k}：</b>${x(cmt)}</p>`;});Object.entries(DC).forEach(([k,cmt])=>{if(cmt)sugTxt+=`<p>· <b>宿舍-${k}：</b>${x(cmt)}</p>`;});
+  let s=`<p><b>班级：</b>${x(clsName)||"未知"}</p>`;
+  if(trHtml)s+=`<table class="cfm-tbl"><thead><tr><th>教师</th><th>维度</th><th>评分</th></tr></thead><tbody>${trHtml}</tbody></table>`;
+  if(cdHtml)s+=`<table class="cfm-tbl"><thead><tr><th>类别</th><th>维度</th><th>评分</th></tr></thead><tbody>${cdHtml}</tbody></table>`;
+  if(!trHtml&&!cdHtml)s+=`<p style="color:var(--txt3)">未填写任何评分</p>`;
+  if(sugTxt)s+=`<div style="margin-top:12px"><b>建议：</b>${sugTxt}</div>`;
+  el.innerHTML=`<div class="card tc"><div class="sec-tit" style="justify-content:center"><span class="ico">✅</span>确认提交</div><div class="fun-line">测试模式：提交后可继续填写下一份</div><div style="text-align:left;margin:16px 0;font-size:14px;line-height:1.8">${s}</div><div class="row2 mb16"><button class="btn btn-o" onclick="S=3;go()">← 返回修改</button><button class="btn btn-p" id="sb" onclick="doSb()">确认提交</button></div><div class="err mt8" id="se"></div></div>`;}
 
 /* ══════ 提交逻辑（核心：不锁定、记录日志） ══════ */
 async function doSb(){
@@ -183,9 +225,10 @@ async function doSb(){
   const pts=[];for(let[tid,cmt]of Object.entries(TC))if(cmt)pts.push(`[教师:${nm[tid]||tid}] ${cmt}`);for(let[k,cmt]of Object.entries(CC))if(cmt)pts.push(`[饭堂:${k}] ${cmt}`);for(let[k,cmt]of Object.entries(DC))if(cmt)pts.push(`[宿舍:${k}] ${cmt}`);const gs=document.getElementById("gs")?.value?.trim()||"";if(gs)pts.push(`[综合] ${gs}`);
   if(pts.length){try{const{error}=await sb.from("suggestions").insert({submission_id:sid,content:pts.join("\n")});if(error){serr("建议保存失败："+error.message,btn);return;}}catch(e){serr("网络错误",btn);return;}}
 
-  // ★ 记录到提交日志
+  // ★ 记录到提交日志 + 清除草稿
   let clsName="";try{const r=await sb.from("classes").select("name").eq("id",C).single();if(!r.error&&r.data)clsName=r.data.name;}catch(e){}
   subLog.unshift({idx:subLog.length+1,cls:clsName||"未知",tcnt:Object.values(TS).filter(Boolean).length,time:new Date().toLocaleString("zh-CN")});
+  clearDraft();
 
   // ★ 展示成功 + 再填一份
   const el=document.getElementById("sc");
@@ -197,7 +240,7 @@ function serr(msg,btn){const el=document.getElementById("se");if(el){el.textCont
 
 /* ★ 重置状态，重新开始 */
 function doAgain(){
-  S=1;C=null;T=null;TS={};TC={};CS={};CC={};DS={};DC={};
+  S=1;C=null;T=null;TS={};TC={};CS={};CC={};DS={};DC={};clearDraft();
   go();
 }
 

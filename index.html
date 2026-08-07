@@ -385,12 +385,14 @@ function renderOverview(el){
     const pct=savg>0?Math.round((savg/5)*100):0;
     classRows+=`<tr><td>${x(c.name)}</td><td class="ta-c">${cnt}</td><td class="ta-c"><div class="row-bar"><div class="row-bar-fill" style="width:${pct}%"></div><b>${ag(scores)}</b></div></td></tr>`;
   }
-  // 维度均分 → 水平柱状图
+  // 维度均分：使用 buildTeacherMap 按教师加权平均，与表格保持一致
   const barColors=["b1","b2","b3","b4","b5"];
+  const tmap=buildTeacherMap();
   let bars="";DM.forEach((d,i)=>{
-    const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p?p.dim===d:r.dimension===d;}).map(r=>r.score);
-    const avg=ag(sc,true);const pct=Math.min(100,Math.round((avg/5)*100));
-    bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${ag(sc)}</div></div>`;
+    const tAvgs=[];ca.t.forEach(t=>{const sc=(tmap.byTid[t.id]||{})[`${t.id}|${d}`]||[];if(sc.length)tAvgs.push(sc.reduce((a,b)=>a+b,0)/sc.length);});
+    const overallAvg=tAvgs.length?(tAvgs.reduce((a,b)=>a+b,0)/tAvgs.length):0;
+    const pct=overallAvg>0?Math.min(100,Math.round((overallAvg/5)*100)):0;
+    bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${overallAvg>0?overallAvg.toFixed(1):"-"}</div></div>`;
   });
   // 综合建议（去前缀）
   const sugs=pS("综合");
