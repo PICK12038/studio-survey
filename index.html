@@ -245,6 +245,7 @@ function x(s){const d=document.createElement("div");d.textContent=s;return d.inn
 function dt(){return new Date().toISOString().slice(0,10);}
 // 解析教师评分维度: "teacherId|dimension" → {tid, dim}
 function pd(d){if(!d)return null;const i=d.indexOf('|');return i>0?{tid:Number(d.slice(0,i)),dim:d.slice(i+1)}:null;}
+function buildTeacherMap(){const byTid={},sidSet={};(ca.r||[]).forEach(r=>{const p=pd(r.dimension);if(p&&p.tid){if(!byTid[p.tid])byTid[p.tid]={};if(!byTid[p.tid][r.dimension])byTid[p.tid][r.dimension]=[];byTid[p.tid][r.dimension].push(r.score);if(!sidSet[p.tid])sidSet[p.tid]=new Set();sidSet[p.tid].add(r.submission_id);}});return{byTid,sidSet};}
 
 // ══════════ 学生问卷 ══════════
 async function srv(){
@@ -503,7 +504,7 @@ function renderTeacher(el){
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
   let opt='<option value="">全部班级</option>';ca.c.forEach(c=>opt+=`<option value="${c.id}" ${tf==c.id?'selected':''}>${x(c.name)}</option>`);
   const ftd=tf?(ca.t||[]).filter(t=>t.class_id==tf):(ca.t||[]);
-  const trByTid={},trSidSet={};(ca.r||[]).forEach(r=>{const p=pd(r.dimension);if(p){if(!trByTid[p.tid])trByTid[p.tid]={};if(!trByTid[p.tid][r.dimension])trByTid[p.tid][r.dimension]=[];trByTid[p.tid][r.dimension].push(r.score);if(!trSidSet[p.tid])trSidSet[p.tid]=new Set();trSidSet[p.tid].add(r.submission_id);}});
+  const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();
   let h=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">👨‍🏫 教师评分详情</span><button class="btn-pm sm" onclick="doExportTeacher()">导出教师数据</button></div>
     <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select></div>
     <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
@@ -549,13 +550,13 @@ function renderSugs(cat,cid){
 }
 
 // ===== 导出函数 =====
-async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.tid===t.id&&p.dim===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");
+async function doExportAll(){await loadData(true);const wb=XLSX.utils.book_new();const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();const tr=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const cnt=(trSidSet[t.id]||new Set()).size;const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",cnt];let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];r.push(ag(sc));al.push(...sc);});r.push(ag(al));tr.push(r);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tr),"教师评价");
   for(let[tbl,ttl,ck]of[["canteen_ratings","饭堂评价","cr"],["dormitory_ratings","宿舍评价","dr"]]){
     const d=ca[ck]||[];
     const g={};d.forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["维度","均分","人次"],...Object.entries(g).map(([k,v])=>[k,ag(v),v.length])]),ttl);
   }XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["提交ID","建议内容"],...(ca.sg||[]).map(s=>[s.submission_id,s.content])]),"建议");XLSX.writeFile(wb,`画室满意度调查_${dt()}.xlsx`);}
-async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const sm={};(ca.s||[]).forEach(s=>{if(!sm[s.teacher_id])sm[s.teacher_id]=[];sm[s.teacher_id].push(s.id);});const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const si=sm[t.id]||[];const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",si.length];let al=[];DM.forEach(d=>{const sc=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.tid===t.id&&p.dim===d&&si.includes(r.submission_id);}).map(r=>r.score);r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
+async function doExportTeacher(){await loadData(true);const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();const rs=[["班级","教师","科目","班主任","评价人数",...DM,"综合均分"]];for(let t of ca.t){const cnt=(trSidSet[t.id]||new Set()).size;const r=[cm[t.class_id]||"",t.name,t.subjects||"",t.is_head_teacher?"是":"否",cnt];let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];r.push(ag(sc));al.push(...sc);});r.push(ag(al));rs.push(r);}rs.push([],["— 教师建议 —"]);pS("教师",tf).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),"教师评价");XLSX.writeFile(wb,`画室_教师评价_${dt()}.xlsx`);}
 async function doExportRating(table,title,cat){const cache=table==="canteen_ratings"?ca.cr:ca.dr;const data=cache&&cache.length?cache:[];const g={};data.forEach(r=>{if(!g[r.dimension])g[r.dimension]=[];g[r.dimension].push(r.score);});const rs=[["维度","均分","人次"]];for(let k in g)rs.push([k,ag(g[k]),g[k].length]);rs.push([],["— 相关建议 —"]);pS(cat).forEach(s=>rs.push([s.submission_id,s.lines.join(" | ")]));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rs),title);XLSX.writeFile(wb,`画室_${title}_${dt()}.xlsx`);}
 
 window.addEventListener("hashchange",go);go();
