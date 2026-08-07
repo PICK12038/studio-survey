@@ -528,22 +528,29 @@ async function delSubs(sids){
 function renderTeacher(el){
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
   let opt='<option value="">全部班级</option>';ca.c.forEach(c=>opt+=`<option value="${c.id}" ${tf==c.id?'selected':''}>${x(c.name)}</option>`);
-  let ftd=tf?(ca.t||[]).filter(t=>t.class_id==tf):(ca.t||[]);
-  const q=tq.trim().toLowerCase();const total=ftd.length;
-  if(q)ftd=ftd.filter(t=>t.name.toLowerCase().includes(q));
   const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();
   let h=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">👨‍🏫 教师评分详情</span><button class="btn-pm sm" onclick="doExportTeacher()">导出教师数据</button></div>
-    <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select><label style="margin-left:8px">搜索教师：</label><input type="text" class="sch-input" placeholder="输入教师姓名搜索..." value="${x(tq)}" oninput="teacherSearch(this.value)"><span style="font-size:12px;color:var(--txt3);margin-left:4px">${q?'共 '+ftd.length+' / '+total+' 位':'共 '+total+' 位'}</span></div>
-    <div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
-  DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody>';
-  if(ftd.length){for(let t of ftd){const cnt=(trSidSet[t.id]||new Set()).size;h+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${hlName(t.name,q)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${cnt}</td>`;let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];h+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});h+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}}
-  else h+=`<tr><td colspan="${8+DM.length}" class="ta-c" style="color:var(--txt3);padding:20px">${q?'未搜索到匹配"'+x(q)+'"的教师':'暂无教师数据'}</td></tr>`;
-  h+=`</tbody></table></div></div>`;
+    <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select><label style="margin-left:8px">搜索教师：</label><input type="text" class="sch-input" id="schInput" placeholder="输入教师姓名搜索..." value="${x(tq)}" oninput="doTeacherSearch()"><span id="schCnt" style="font-size:12px;color:var(--txt3);margin-left:4px"></span></div>
+    <div class="panel-body"><div class="tbl-wrap"><table id="teacherTbl"><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
+  DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody></tbody></table></div></div>';
   h+=`<div class="sug-lst"><h4>📝 学生对教师的建议${tf?'（'+cm[tf]+'）':'（全部班级）'}</h4>${renderSugs("教师",tf)}</div></div>`;
   el.innerHTML=h;
+  doTeacherSearch();
 }
-function filterClass(v){tf=v;renderTeacher(document.getElementById("dashBody"));}
-function teacherSearch(v){tq=v;renderTeacher(document.getElementById("dashBody"));}
+function filterClass(v){tf=v;tq="";renderTeacher(document.getElementById("dashBody"));}
+function doTeacherSearch(){
+  const inp=document.getElementById("schInput");tq=inp?inp.value:"";const q=tq.trim().toLowerCase();
+  const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
+  let ftd=tf?(ca.t||[]).filter(t=>t.class_id==tf):(ca.t||[]);
+  const total=ftd.length;if(q)ftd=ftd.filter(t=>t.name.toLowerCase().includes(q));
+  const cntEl=document.getElementById("schCnt");if(cntEl)cntEl.textContent=q?ftd.length+' / '+total+' 位':'共 '+total+' 位';
+  const tbl=document.getElementById("teacherTbl");if(!tbl)return;
+  const tbody=tbl.querySelector("tbody");if(!tbody)return;
+  const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();
+  if(!ftd.length){tbody.innerHTML=`<tr><td colspan="${8+DM.length}" class="ta-c" style="color:var(--txt3);padding:20px">${q?'未搜索到匹配"'+x(q)+'"的教师':'暂无教师数据'}</td></tr>`;return;}
+  let rows="";for(let t of ftd){const cnt=(trSidSet[t.id]||new Set()).size;rows+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${hlName(t.name,q)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${cnt}</td>`;let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];rows+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});rows+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
+  tbody.innerHTML=rows;
+}
 function hlName(name,q){if(!q)return x(name);const i=name.toLowerCase().indexOf(q);if(i<0)return x(name);const pre=x(name.slice(0,i)),m='<mark style="background:#fff3cd;color:#856404;padding:0 2px;border-radius:2px">'+x(name.slice(i,i+q.length))+'</mark>',post=x(name.slice(i+q.length));return pre+m+post;}
 
 // ===== 饭堂/宿舍评价 =====
