@@ -279,6 +279,10 @@ tr:hover td{background:var(--blue-lt)}
 .kpi-mini{flex:1;text-align:center;padding:18px 16px;border-right:1px solid var(--brd2);transition:background .15s}
 .kpi-mini:last-child{border-right:none}
 .kpi-mini:hover{background:#f8f9fb}
+/* 需关注模式 */
+.concern-bnr{background:#fff5f5;border:1px solid var(--red);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:13px;color:#991b1b;display:flex;align-items:center;flex-wrap:wrap}
+#teacherTbl tbody tr.tc-row{background:#fff5f5!important}
+#teacherTbl tbody tr.tc-row:hover{background:#fee2e2!important}
 .kpi-mini-n{display:block;font-size:26px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.5px}
 .kpi-mini-l{display:block;font-size:12px;color:var(--txt3);margin-top:3px}
 
@@ -318,7 +322,7 @@ const sb=supabase.createClient(SB,SK);
 function go(){const h=location.hash.slice(1)||"s";
   if(typeof supabase==='undefined'){document.getElementById("app").innerHTML=`<div class="container" style="text-align:center;padding:60px 20px"><h2>加载失败</h2><p style="color:var(--txt3);margin:12px 0">SDK 未能加载，请检查网络后刷新</p><button class="btn btn-p" style="width:auto;display:inline-flex" onclick="location.reload()">刷新重试</button></div>`;return;}
   if(h==="s"||h==="ok")srv();else if(h==="adm"||h==="admin"||h==="dash")admEnter();else srv();}
-let S=1,C=null,T=null,TS={},TC={},CS={},CC={},DS={},DC={};
+let S=1,C=null,T=null,TS={},TC={},CS={},CC={},DS={},DC={},concernMode=false,concernSort=false;
 function isAdm(){return!!sessionStorage.getItem("adm");}
 function isDn(){return!!localStorage.getItem("dn")&&!isAdm();}
 function ag(s){return s.length?(s.reduce((a,b)=>a+b,0)/s.length).toFixed(1):"-";}
@@ -452,6 +456,7 @@ function mS(sid){const s=(ca.s||[]).find(s=>s.id===sid);if(!s)return sid;const c
 // 页面切换
 async function switchPg(pg){
   curPg=pg;
+  if(pg!=='teacher')concernSort=false;
   document.querySelectorAll(".sm-item").forEach(el=>el.classList.toggle("on",el.dataset.pg===pg));
   const bc=document.getElementById("breadcrumb");if(bc)bc.textContent=pg==='overview'?'数据概览':pg==='teacher'?'教师评分':pg==='canteen'?'饭堂评价':pg==='dormitory'?'宿舍评价':pg==='manage'?'数据管理':'导出数据';
   await loadData();
@@ -533,7 +538,7 @@ function renderOverview(el){
         <div class="delivery-stars">${totalRatings?'★'.repeat(starCount)+'☆'.repeat(5-starCount):'☆☆☆☆☆'}</div>
         <div class="delivery-avg">${totalRatings?overallAvg.toFixed(1):'-'}<span class="delivery-unit"> 分</span></div>
         <div class="hero-label">好感度 ${goodRate!=='-'?goodRate+'%':'-'}<span class="rate-rule">（≥8分为好评）</span></div>
-        <div class="hero-meta">共 ${totalRatings} 条评分${badCount>0?` · <span style="color:var(--red);font-weight:600">${badCount} 条需关注</span>`:''}</div>
+        <div class="hero-meta">共 ${totalRatings} 条评分${badCount>0?` · <a href="javascript:void(0)" onclick="goConcern()" style="color:var(--red);font-weight:600;text-decoration:underline;cursor:pointer">${badCount} 条需关注 ›</a>`:''}</div>
       </div>
       <div class="hero-right">
         <div class="dist-section">
@@ -562,6 +567,8 @@ function renderOverview(el){
   loadRatingAvg("dormitory_ratings").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
 }
 async function loadRatingAvg(table){const cache=table==="canteen_ratings"?ca.cr:ca.dr;if(cache&&cache.length)return ag(cache.map(d=>d.score));try{const r=await sb.from(table).select("score");if(r.error)return"-";return ag((r.data||[]).map(d=>d.score));}catch(e){return"-";}}
+
+function goConcern(){concernMode=true;switchPg('teacher');}
 
 // ===== 数据管理 =====
 let mgSel=[],mgPg=1,mgTotal=0;const mgSize=20;
@@ -634,10 +641,13 @@ async function delSubs(sids){
 
 // ===== 教师评分 =====
 function renderTeacher(el){
+  const isConcern=concernMode;concernMode=false;concernSort=isConcern;
   const cm=Object.fromEntries((ca.c||[]).map(c=>[c.id,c.name]));
   let opt='<option value="">全部班级</option>';ca.c.forEach(c=>opt+=`<option value="${c.id}" ${tf==c.id?'selected':''}>${x(c.name)}</option>`);
   const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();
-  let h=`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">👨‍🏫 教师评分详情</span><button class="btn-pm sm" onclick="doExportTeacher()">导出教师数据</button></div>
+  let concBnr='';
+  if(isConcern)concBnr='<div class="concern-bnr">⚠️ 已筛选均分 &lt; 6 的需关注教师（低分优先），标红行均分低于 6 分。<a href="javascript:switchPg(\'overview\')" style="margin-left:auto;color:var(--blue);text-decoration:underline;font-size:12px">← 返回概览</a></div>';
+  let h=concBnr+`<div class="panel"><div class="panel-hd"><span class="panel-hd-tit">👨‍🏫 教师评分详情</span><button class="btn-pm sm" onclick="doExportTeacher()">导出教师数据</button></div>
     <div class="flt-row"><label>筛选班级：</label><select onchange="filterClass(this.value)">${opt}</select><label style="margin-left:8px">搜索教师：</label><input type="text" class="sch-input" id="schInput" placeholder="输入教师姓名搜索..." value="${x(tq)}" oninput="doTeacherSearch()"><span id="schCnt" style="font-size:12px;color:var(--txt3);margin-left:4px"></span></div>
     <div class="panel-body"><div class="tbl-wrap"><table id="teacherTbl"><thead><tr><th>班级</th><th>教师</th><th>科目</th><th class="ta-c">班主任</th><th class="ta-c">人次</th>`;
   DM.forEach(d=>h+=`<th class="ta-c">${d}</th>`);h+='<th class="ta-c">均分</th></tr></thead><tbody></tbody></table></div></div>';
@@ -656,7 +666,9 @@ function doTeacherSearch(){
   const tbody=tbl.querySelector("tbody");if(!tbody)return;
   const{byTid:trByTid,sidSet:trSidSet}=buildTeacherMap();
   if(!ftd.length){tbody.innerHTML=`<tr><td colspan="${8+DM.length}" class="ta-c" style="color:var(--txt3);padding:20px">${q?'未搜索到匹配"'+x(q)+'"的教师':'暂无教师数据'}</td></tr>`;return;}
-  let rows="";for(let t of ftd){const cnt=(trSidSet[t.id]||new Set()).size;rows+=`<tr><td>${cm[t.class_id]||""}</td><td><b>${hlName(t.name,q)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${cnt}</td>`;let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];rows+=`<td class="ta-c">${ag(sc)}</td>`;al.push(...sc);});rows+=`<td class="ta-c"><b style="color:var(--blue)">${ag(al)}</b></td></tr>`;}
+  const avgMap={};ftd.forEach(t=>{let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];al.push(...sc);});avgMap[t.id]=al.length?(al.reduce((a,b)=>a+b,0)/al.length):0;});
+  const sortFtd=concernSort?[...ftd].sort((a,b)=>avgMap[a.id]-avgMap[b.id]):ftd;
+  let rows="";for(let t of sortFtd){const cnt=(trSidSet[t.id]||new Set()).size;const cls=concernSort&&avgMap[t.id]>0&&avgMap[t.id]<6?'tc-row':'';rows+=`<tr class="${cls}"><td>${cm[t.class_id]||""}</td><td><b>${hlName(t.name,q)}</b></td><td>${x(t.subjects||"")}</td><td class="ta-c">${t.is_head_teacher?'<span style="color:var(--blue);font-weight:600">是</span>':'否'}</td><td class="ta-c">${cnt}</td>`;let al=[];DM.forEach(d=>{const sc=(trByTid[t.id]||{})[`${t.id}|${d}`]||[];const av=ag(sc);let tdCls='';if(concernSort&&sc.length&&(sc.reduce((a,b)=>a+b,0)/sc.length)<6)tdCls=' style="color:var(--red);font-weight:600"';rows+=`<td class="ta-c"${tdCls}>${av}</td>`;al.push(...sc);});const avgVal=avgMap[t.id];const avgColor=avgVal>0?(avgVal>=8?'var(--green)':avgVal>=6?'var(--blue)':'var(--red)'):'var(--txt3)';rows+=`<td class="ta-c"><b style="color:${avgColor}">${ag(al)}</b></td></tr>`;}
   tbody.innerHTML=rows;
 }
 function hlName(name,q){if(!q)return x(name);const i=name.toLowerCase().indexOf(q);if(i<0)return x(name);const pre=x(name.slice(0,i)),m='<mark style="background:#fff3cd;color:#856404;padding:0 2px;border-radius:2px">'+x(name.slice(i,i+q.length))+'</mark>',post=x(name.slice(i+q.length));return pre+m+post;}
