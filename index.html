@@ -238,6 +238,54 @@ tr:hover td{background:var(--blue-lt)}
   .bar-c .bar-lbl{width:56px;font-size:12px}
   .overview-grid{grid-template-columns:1fr}
 }
+
+/* 概览 Hero 区 */
+.hero-panel{display:flex;gap:24px;background:var(--card);border-radius:12px;padding:28px 32px;box-shadow:0 1px 2px rgba(0,0,0,.03);border:1px solid var(--brd2);margin-bottom:16px;align-items:center}
+.hero-left{flex-shrink:0;text-align:center;min-width:140px}
+.hero-label{font-size:13px;color:var(--txt3);font-weight:500;margin-bottom:8px;letter-spacing:.3px}
+.hero-score{font-size:56px;font-weight:700;line-height:1;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-2px}
+.hero-unit{font-size:14px;color:var(--txt3);margin-top:4px}
+.hero-meta{font-size:11px;color:var(--txt3);margin-top:6px}
+.hero-right{flex:1;min-width:0}
+.dist-section{border-left:1px solid var(--brd2);padding-left:24px}
+.dist-title{font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:12px}
+.dist-row{display:flex;align-items:center;gap:8px;padding:3px 0}
+.dist-star{font-size:11px;color:#f59e0b;width:70px;flex-shrink:0;text-align:right;letter-spacing:1px}
+.dist-trk{flex:1;height:8px;background:#eef0f4;border-radius:4px;overflow:hidden}
+.dist-bar{height:100%;border-radius:4px;transition:width .6s ease;min-width:0}
+.dist-bar.d5{background:linear-gradient(90deg,var(--green),#4ade80)}.dist-bar.d4{background:linear-gradient(90deg,#22c55e,#86efac)}.dist-bar.d3{background:linear-gradient(90deg,#eab308,#fde047)}.dist-bar.d2{background:linear-gradient(90deg,var(--orange),#fb923c)}.dist-bar.d1{background:linear-gradient(90deg,var(--red),#f87171)}
+.dist-cnt{font-size:12px;color:var(--txt3);width:28px;text-align:center;flex-shrink:0;font-weight:600}
+
+/* 迷你 KPI */
+.kpi-row-inline{display:flex;gap:0;background:var(--card);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.03);border:1px solid var(--brd2);margin-bottom:16px;overflow:hidden}
+.kpi-mini{flex:1;text-align:center;padding:14px 12px;border-right:1px solid var(--brd2);transition:background .15s}
+.kpi-mini:last-child{border-right:none}
+.kpi-mini:hover{background:#f8f9fb}
+.kpi-mini-n{display:block;font-size:22px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.3px}
+.kpi-mini-l{display:block;font-size:11px;color:var(--txt3);margin-top:2px}
+
+/* 班级满意度卡片 */
+.cls-card-list{display:flex;flex-direction:column;gap:10px}
+.cls-card{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;border:1px solid var(--brd2);background:var(--card);transition:all .15s;gap:12px}
+.cls-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.cls-card-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.cls-card-mid{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cls-card-bar{width:80px;height:6px;background:#eef0f4;border-radius:3px;overflow:hidden}
+.cls-card-fill{height:100%;border-radius:3px;transition:width .5s ease;min-width:0}
+.cls-card-score{font-size:14px;font-weight:700;font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;width:32px;text-align:center;flex-shrink:0}
+.cls-card-sub{font-size:10px;color:var(--txt3);width:48px;text-align:right;flex-shrink:0}
+.cls-card.hi .cls-card-fill{background:linear-gradient(90deg,var(--green),#4ade80)}.cls-card.hi .cls-card-score{color:var(--green)}
+.cls-card.md .cls-card-fill{background:linear-gradient(90deg,#eab308,#fde047)}.cls-card.md .cls-card-score{color:#b45309}
+.cls-card.lo .cls-card-fill{background:linear-gradient(90deg,var(--red),#f87171)}.cls-card.lo .cls-card-score{color:var(--red)}
+.cls-card.na .cls-card-fill{background:var(--brd2)}.cls-card.na .cls-card-score{color:var(--txt3)}
+
+@media(max-width:768px){
+  .hero-panel{flex-direction:column;padding:20px;gap:16px}
+  .hero-left{min-width:auto}
+  .hero-score{font-size:42px}
+  .dist-section{border-left:none;border-top:1px solid var(--brd2);padding-left:0;padding-top:16px}
+  .kpi-row-inline{flex-wrap:wrap}.kpi-mini{flex:0 0 33.33%;border-bottom:1px solid var(--brd2)}.kpi-mini:nth-child(3){border-right:none}
+}
 </style>
 </head>
 <body id="app"></body>
@@ -325,7 +373,7 @@ function renderDashboard(){
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
       <a href="https://pick12038.github.io/studio-survey/test.html" target="_blank" class="side-link" style="border-color:var(--red);color:var(--red)">🧪 测试学生端</a>
-      <div class="side-foot">v2.6 · 画室专用</div>
+      <div class="side-foot">v2.7 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
@@ -397,22 +445,33 @@ async function switchPg(pg){
   else if(pg==='export')renderExport(el);
 }
 
-// ===== 概览（大厂风格改版） =====
+// ===== 概览（画室场景版） =====
 function renderOverview(el){
-  const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length;
+  const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length,rc=ca.r?ca.r.length:0;
   let tAvg="-";if(ca.r&&ca.r.length)tAvg=ag(ca.r.map(r=>r.score));
-  const rc=ca.r?ca.r.length:0;
-  // 按班级汇总
+
+  // 评分分布 1-5星
+  const dist=[0,0,0,0,0];
+  (ca.r||[]).forEach(r=>{const s=Math.round(r.score);if(s>=1&&s<=5)dist[5-s]++;});
+  const maxDist=Math.max(...dist,1);
+  let distHtml="";[5,4,3,2,1].forEach((star,i)=>{
+    const cnt=dist[i],pct=Math.round(cnt/maxDist*100);
+    distHtml+=`<div class="dist-row"><span class="dist-star">${"★".repeat(star)}${"☆".repeat(5-star)}</span><div class="dist-trk"><div class="dist-bar d${star}" style="width:${pct}%"></div></div><span class="dist-cnt">${cnt}</span></div>`;
+  });
+
+  // 班级满意度卡片
   const classSubs={};(ca.s||[]).forEach(s=>{if(!classSubs[s.class_id])classSubs[s.class_id]=0;classSubs[s.class_id]++;});
-  let classRows="";
+  let classCards="";
   for(let c of ca.c){
     const cnt=classSubs[c.id]||0;
     const sids=new Set((ca.s||[]).filter(s=>s.class_id===c.id).map(s=>s.id));
     const scores=(ca.r||[]).filter(r=>sids.has(r.submission_id)).map(r=>r.score);
     const savg=ag(scores,true);
     const pct=savg>0?Math.round((savg/5)*100):0;
-    classRows+=`<tr><td><span class="cls-name">${x(c.name)}</span></td><td class="ta-c"><span class="cls-cnt">${cnt}</span></td><td class="ta-c"><div class="row-bar"><div class="row-bar-fill" style="width:${pct}%"></div><b>${ag(scores)}</b></div></td></tr>`;
+    const cls=savg>0?(savg>=4?"hi":savg>=3?"md":"lo"):"na";
+    classCards+=`<div class="cls-card ${cls}"><div class="cls-card-name">${x(c.name)}</div><div class="cls-card-mid"><div class="cls-card-bar"><div class="cls-card-fill" style="width:${pct}%"></div></div><div class="cls-card-score">${ag(scores)}</div></div><div class="cls-card-sub">${cnt} 份</div></div>`;
   }
+
   // 维度均分
   const barColors=["b1","b2","b3","b4","b5"];
   const tmap=buildTeacherMap();
@@ -422,6 +481,7 @@ function renderOverview(el){
     const pct=overallAvg>0?Math.min(100,Math.round((overallAvg/5)*100)):0;
     bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${overallAvg>0?overallAvg.toFixed(1):"-"}</div></div>`;
   });
+
   // 综合建议
   const sugs=pS("综合");
   let sugHtml="";
@@ -429,34 +489,38 @@ function renderOverview(el){
     const prefix="[综合:";
     sugs.forEach(s=>{const cl=s.lines.map(l=>l.startsWith(prefix)?l.slice(prefix.length).replace("]","").trim():l).filter(l=>l).join("<br>");sugHtml+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${cl}</div></div>`;});
   }
+
   el.innerHTML=`
-    <div class="panel" style="margin-bottom:20px"><div class="panel-hd"><span class="panel-hd-tit">关键指标</span><div><button class="btn-pm sm" onclick="doExportAll()">导出全部</button></div></div>
-      <div class="panel-body">
-        <div class="kpi-row">
-          <div class="kpi k-b"><div class="kpi-label">总提交数</div><div class="kpi-n">${tc}</div><div class="kpi-sub">问卷提交</div></div>
-          <div class="kpi k-t"><div class="kpi-label">覆盖班级</div><div class="kpi-n">${cc}</div><div class="kpi-sub">参与班级</div></div>
-          <div class="kpi k-o"><div class="kpi-label">在职教师</div><div class="kpi-n">${tc2}</div><div class="kpi-sub">可评价对象</div></div>
-          <div class="kpi k-p"><div class="kpi-label">评分人次</div><div class="kpi-n">${rc}</div><div class="kpi-sub">累计评价</div></div>
+    <div class="hero-panel">
+      <div class="hero-left">
+        <div class="hero-label">总体满意度</div>
+        <div class="hero-score">${tAvg}</div>
+        <div class="hero-unit">/ 5.0</div>
+        <div class="hero-meta">基于 ${rc} 条教师评分</div>
+      </div>
+      <div class="hero-right">
+        <div class="dist-section">
+          <div class="dist-title">评分分布</div>
+          ${distHtml||'<div class="empty" style="padding:10px;font-size:12px">暂无评分</div>'}
         </div>
       </div>
     </div>
 
-    <div class="panel" style="margin-bottom:20px"><div class="panel-hd"><span class="panel-hd-tit">评价均分</span></div>
-      <div class="panel-body">
-        <div class="kpi-row" style="margin-bottom:20px">
-          <div class="kpi k-b"><div class="kpi-label">教师均分</div><div class="kpi-n" style="font-size:26px">${tAvg}</div><div class="kpi-sub">${ca.r&&ca.r.length?ca.r.length+'条评分':'暂无'}</div></div>
-          <div class="kpi k-g"><div class="kpi-label">饭堂均分</div><div class="kpi-n" style="font-size:26px" id="kpi-canteen">-</div><div class="kpi-sub">独立评分</div></div>
-          <div class="kpi k-o"><div class="kpi-label">宿舍均分</div><div class="kpi-n" style="font-size:26px" id="kpi-dorm">-</div><div class="kpi-sub">独立评分</div></div>
-        </div>
-        <div style="margin-bottom:8px"><span style="font-weight:600;font-size:14px">各维度评分</span><span style="font-size:12px;color:var(--txt3);margin-left:8px">满分 5 分</span></div>
-        ${bars||'<div class="empty">暂无评分数据</div>'}
-      </div>
+    <div class="kpi-row-inline">
+      <div class="kpi-mini"><span class="kpi-mini-n">${tc}</span><span class="kpi-mini-l">总提交</span></div>
+      <div class="kpi-mini"><span class="kpi-mini-n">${cc}</span><span class="kpi-mini-l">覆盖班级</span></div>
+      <div class="kpi-mini"><span class="kpi-mini-n">${tc2}</span><span class="kpi-mini-l">在职教师</span></div>
+      <div class="kpi-mini"><span class="kpi-mini-n" id="kpi-canteen">-</span><span class="kpi-mini-l">饭堂均分</span></div>
+      <div class="kpi-mini"><span class="kpi-mini-n" id="kpi-dorm">-</span><span class="kpi-mini-l">宿舍均分</span></div>
     </div>
 
     <div class="overview-grid">
-      <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">按班级汇总</span></div><div class="panel-body"><div class="tbl-wrap"><table><thead><tr><th>班级</th><th class="ta-c">提交</th><th class="ta-c">均分</th></tr></thead><tbody>${classRows||'<tr><td colspan="3" class="ta-c" style="color:var(--txt3)">暂无数据</td></tr>'}</tbody></table></div></div></div>
-      <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">综合建议</span></div><div class="panel-body">${sugHtml||'<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>'}</div></div>
-    </div>`;
+      <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">维度评分</span></div><div class="panel-body">${bars||'<div class="empty">暂无评分数据</div>'}</div></div>
+      <div class="panel"><div class="panel-hd"><span class="panel-hd-tit">班级满意度</span></div><div class="panel-body"><div class="cls-card-list">${classCards||'<div class="empty">暂无数据</div>'}</div></div></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px"><div class="panel-hd"><span class="panel-hd-tit">综合建议</span><div><button class="btn-pm sm" onclick="doExportAll()">导出全部</button></div></div><div class="panel-body">${sugHtml||'<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>'}</div></div>`;
+
   loadRatingAvg("canteen_ratings").then(v=>{const e=document.getElementById("kpi-canteen");if(e)e.textContent=v;});
   loadRatingAvg("dormitory_ratings").then(v=>{const e=document.getElementById("kpi-dorm");if(e)e.textContent=v;});
 }
