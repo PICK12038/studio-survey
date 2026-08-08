@@ -373,7 +373,7 @@ function renderDashboard(){
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
       <a href="https://pick12038.github.io/studio-survey/test.html" target="_blank" class="side-link" style="border-color:var(--red);color:var(--red)">🧪 测试学生端</a>
-      <div class="side-foot">v2.9 · 画室专用</div>
+      <div class="side-foot">v2.10 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
@@ -445,21 +445,19 @@ async function switchPg(pg){
   else if(pg==='export')renderExport(el);
 }
 
-// ===== 概览（画室场景版 v2.9） =====
+// ===== 概览（画室场景版 v2.10） =====
 function renderOverview(el){
   const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length;
 
-  // 总体满意度（10分制：每条完整提交5维度总分÷5取平均）
-  const sidScores={};(ca.r||[]).forEach(r=>{if(!sidScores[r.submission_id])sidScores[r.submission_id]=[];sidScores[r.submission_id].push(r.score);});
-  const fullSids=Object.keys(sidScores).filter(sid=>sidScores[sid].length===5);
-  let overall10="-",overallN=0;
-  if(fullSids.length){
-    const totals=fullSids.map(sid=>sidScores[sid].reduce((a,b)=>a+b,0));
-    overall10=(totals.reduce((a,b)=>a+b,0)/fullSids.length/5).toFixed(1);
-    overallN=fullSids.length;
-  }
+  // 好评率（评分≥8的占比）和需关注数（评分<4）
+  const allScores=(ca.r||[]).map(r=>r.score);
+  const totalRatings=allScores.length;
+  const goodCount=allScores.filter(s=>s>=8).length;
+  const badCount=allScores.filter(s=>s<4).length;
+  const goodRate=totalRatings?Math.round(goodCount/totalRatings*1000)/10:"-";
+  const rateColor=goodRate==='-'?'var(--txt3)':goodRate>=80?'var(--green)':goodRate>=60?'var(--orange)':'var(--red)';
 
-  // 评分分布（1-10分→5星桶聚合：9-10→5★,7-8→4★,5-6→3★,3-4→2★,1-2→1★）
+  // 评分分布（1-10分→5星桶聚合）
   const dist=[0,0,0,0,0];
   (ca.r||[]).forEach(r=>{const s=Math.round(r.score);const star=s>=9?5:s>=7?4:s>=5?3:s>=3?2:1;dist[5-star]++;});
   const maxDist=Math.max(...dist,1);
@@ -508,10 +506,9 @@ function renderOverview(el){
   el.innerHTML=`
     <div class="hero-panel">
       <div class="hero-left">
-        <div class="hero-label">总体满意度</div>
-        <div class="hero-score">${overall10}</div>
-        <div class="hero-unit">/ 10.0</div>
-        <div class="hero-meta">${overallN?`${overallN} 份完整评价`:'暂无完整评价'}</div>
+        <div class="hero-label">好评率</div>
+        <div class="hero-score" style="color:${rateColor}">${goodRate!=='-'?goodRate+'%':'-'}</div>
+        <div class="hero-meta">共 ${totalRatings} 条评分${badCount>0?` · <span style="color:var(--red);font-weight:600">${badCount} 条需关注</span>`:''}</div>
       </div>
       <div class="hero-right">
         <div class="dist-section">
