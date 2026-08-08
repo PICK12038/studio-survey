@@ -119,7 +119,7 @@ textarea.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 2px va
 .panel{background:var(--card);border-radius:var(--rds);box-shadow:var(--sh);overflow:hidden}
 .panel-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:10px}
 .panel-hd-tit{font-size:15px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px}
-.panel-body{padding:20px;overflow-x:auto}
+.panel-body{padding:24px;overflow-x:auto}
 
 /* 筛选区 */
 .flt-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 20px 16px}
@@ -223,15 +223,15 @@ tr:hover td{background:var(--blue-lt)}
 #mgTbl tbody tr.sel td{border-color:rgba(0,82,217,.12)}
 /* 水平柱状图 */
 /* 维度评分可视化 — 图形仪表卡 */
-.dim-card{padding:14px 0;border-bottom:1px solid var(--brd2)}
+.dim-card{padding:18px 0;border-bottom:1px solid var(--brd2)}
 .dim-card:last-child{border-bottom:none}
-.dim-card-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.dim-card-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.dim-card-lbl{font-size:14px;font-weight:600;color:var(--txt);flex:1}
-.dim-card-score{font-size:20px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.dim-card-unit{font-size:11px;color:var(--txt3);font-weight:400;margin-left:1px}
-.dim-gauge{height:18px;background:#eef0f4;border-radius:9px;overflow:hidden;position:relative}
-.dim-gauge-fill{height:100%;border-radius:9px;transition:width .8s cubic-bezier(.4,0,.2,1);min-width:0}
+.dim-card-hd{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.dim-card-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dim-card-lbl{font-size:15px;font-weight:600;color:var(--txt);flex:1}
+.dim-card-score{font-size:24px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.dim-card-unit{font-size:12px;color:var(--txt3);font-weight:400;margin-left:2px}
+.dim-gauge{height:22px;background:#eef0f4;border-radius:11px;overflow:hidden;position:relative}
+.dim-gauge-fill{height:100%;border-radius:11px;transition:width .8s cubic-bezier(.4,0,.2,1);min-width:0}
 .g1.dim-gauge-fill{background:linear-gradient(90deg,var(--blue),#60a5fa)}.g1.dim-card-dot{background:var(--blue)}
 .g2.dim-gauge-fill{background:linear-gradient(90deg,var(--green),#4ade80)}.g2.dim-card-dot{background:var(--green)}
 .g3.dim-gauge-fill{background:linear-gradient(90deg,var(--orange),#fb923c)}.g3.dim-card-dot{background:var(--orange)}
@@ -241,57 +241,57 @@ tr:hover td{background:var(--blue-lt)}
 .row-bar{display:flex;align-items:center;gap:8px}
 .row-bar-fill{height:6px;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:3px;min-width:0;transition:width .5s ease}
 .row-bar b{font-size:13px;flex-shrink:0;font-weight:600}
-.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:768px){
   .overview-grid{grid-template-columns:1fr}
 }
 
 /* 概览 Hero 区 */
-.hero-panel{display:flex;gap:24px;background:var(--card);border-radius:12px;padding:28px 32px;box-shadow:0 1px 2px rgba(0,0,0,.03);border:1px solid var(--brd2);margin-bottom:16px;align-items:center}
-.hero-left{flex-shrink:0;text-align:center;min-width:140px}
-.hero-label{font-size:13px;color:var(--txt3);font-weight:500;margin-bottom:8px;letter-spacing:.3px}
-.hero-score{font-size:56px;font-weight:700;line-height:1;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-2px}
+.hero-panel{display:flex;gap:36px;background:var(--card);border-radius:16px;padding:36px 44px;box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid var(--brd2);margin-bottom:20px;align-items:center}
+.hero-left{flex-shrink:0;text-align:center;min-width:160px}
+.hero-label{font-size:14px;color:var(--txt3);font-weight:500;margin-bottom:10px;letter-spacing:.4px}
+.hero-score{font-size:64px;font-weight:700;line-height:1;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-2.5px}
 .hero-unit{font-size:14px;color:var(--txt3);margin-top:4px}
-.hero-meta{font-size:11px;color:var(--txt3);margin-top:6px}
-.rate-rule{display:block;font-size:11px;color:var(--txt3);font-weight:400;margin-top:2px}
+.hero-meta{font-size:12px;color:var(--txt3);margin-top:8px}
+.rate-rule{display:block;font-size:12px;color:var(--txt3);font-weight:400;margin-top:3px}
 .hero-right{flex:1;min-width:0}
-.dist-section{border-left:1px solid var(--brd2);padding-left:24px}
-.dist-title{font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:12px}
-.dist-row{display:flex;align-items:center;gap:8px;padding:3px 0}
-.dist-star{font-size:11px;color:#f59e0b;width:70px;flex-shrink:0;text-align:right;letter-spacing:1px}
-.dist-trk{flex:1;height:8px;background:#eef0f4;border-radius:4px;overflow:hidden}
-.dist-bar{height:100%;border-radius:4px;transition:width .6s ease;min-width:0}
+.dist-section{border-left:1px solid var(--brd2);padding-left:28px}
+.dist-title{font-size:14px;font-weight:600;color:var(--txt2);margin-bottom:14px}
+.dist-row{display:flex;align-items:center;gap:10px;padding:5px 0}
+.dist-star{font-size:12px;color:#f59e0b;width:78px;flex-shrink:0;text-align:right;letter-spacing:1.2px}
+.dist-trk{flex:1;height:10px;background:#eef0f4;border-radius:5px;overflow:hidden}
+.dist-bar{height:100%;border-radius:5px;transition:width .6s ease;min-width:0}
 .dist-bar.d5{background:linear-gradient(90deg,var(--green),#4ade80)}.dist-bar.d4{background:linear-gradient(90deg,#22c55e,#86efac)}.dist-bar.d3{background:linear-gradient(90deg,#eab308,#fde047)}.dist-bar.d2{background:linear-gradient(90deg,var(--orange),#fb923c)}.dist-bar.d1{background:linear-gradient(90deg,var(--red),#f87171)}
-.dist-cnt{font-size:12px;color:var(--txt3);width:28px;text-align:center;flex-shrink:0;font-weight:600}
+.dist-cnt{font-size:13px;color:var(--txt3);width:32px;text-align:center;flex-shrink:0;font-weight:600}
 
 /* 迷你 KPI */
-.kpi-row-inline{display:flex;gap:0;background:var(--card);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.03);border:1px solid var(--brd2);margin-bottom:16px;overflow:hidden}
-.kpi-mini{flex:1;text-align:center;padding:14px 12px;border-right:1px solid var(--brd2);transition:background .15s}
+.kpi-row-inline{display:flex;gap:0;background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid var(--brd2);margin-bottom:20px;overflow:hidden}
+.kpi-mini{flex:1;text-align:center;padding:18px 16px;border-right:1px solid var(--brd2);transition:background .15s}
 .kpi-mini:last-child{border-right:none}
 .kpi-mini:hover{background:#f8f9fb}
-.kpi-mini-n{display:block;font-size:22px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.3px}
-.kpi-mini-l{display:block;font-size:11px;color:var(--txt3);margin-top:2px}
+.kpi-mini-n{display:block;font-size:26px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.5px}
+.kpi-mini-l{display:block;font-size:12px;color:var(--txt3);margin-top:3px}
 
 /* 班级满意度卡片 */
-.cls-card-list{display:flex;flex-direction:column;gap:10px}
-.cls-card{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;border:1px solid var(--brd2);background:var(--card);transition:all .15s;gap:12px}
+.cls-card-list{display:flex;flex-direction:column;gap:12px}
+.cls-card{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:10px;border:1px solid var(--brd2);background:var(--card);transition:all .15s;gap:14px}
 .cls-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.cls-card-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
-.cls-card-mid{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.cls-card-bar{width:80px;height:6px;background:#eef0f4;border-radius:3px;overflow:hidden}
-.cls-card-fill{height:100%;border-radius:3px;transition:width .5s ease;min-width:0}
-.cls-card-score{font-size:14px;font-weight:700;font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;width:32px;text-align:center;flex-shrink:0}
-.cls-card-sub{font-size:10px;color:var(--txt3);width:48px;text-align:right;flex-shrink:0}
+.cls-card-name{font-size:14px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.cls-card-mid{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.cls-card-bar{width:100px;height:8px;background:#eef0f4;border-radius:4px;overflow:hidden}
+.cls-card-fill{height:100%;border-radius:4px;transition:width .5s ease;min-width:0}
+.cls-card-score{font-size:15px;font-weight:700;font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;width:36px;text-align:center;flex-shrink:0}
+.cls-card-sub{font-size:11px;color:var(--txt3);width:48px;text-align:right;flex-shrink:0}
 .cls-card.hi .cls-card-fill{background:linear-gradient(90deg,var(--green),#4ade80)}.cls-card.hi .cls-card-score{color:var(--green)}
 .cls-card.md .cls-card-fill{background:linear-gradient(90deg,#eab308,#fde047)}.cls-card.md .cls-card-score{color:#b45309}
 .cls-card.lo .cls-card-fill{background:linear-gradient(90deg,var(--red),#f87171)}.cls-card.lo .cls-card-score{color:var(--red)}
 .cls-card.na .cls-card-fill{background:var(--brd2)}.cls-card.na .cls-card-score{color:var(--txt3)}
 
 @media(max-width:768px){
-  .hero-panel{flex-direction:column;padding:20px;gap:16px}
+  .hero-panel{flex-direction:column;padding:24px;gap:20px}
   .hero-left{min-width:auto}
-  .hero-score{font-size:42px}
-  .dist-section{border-left:none;border-top:1px solid var(--brd2);padding-left:0;padding-top:16px}
+  .hero-score{font-size:48px}
+  .dist-section{border-left:none;border-top:1px solid var(--brd2);padding-left:0;padding-top:18px}
   .kpi-row-inline{flex-wrap:wrap}.kpi-mini{flex:0 0 33.33%;border-bottom:1px solid var(--brd2)}.kpi-mini:nth-child(3){border-right:none}
 }
 </style>
