@@ -222,20 +222,27 @@ tr:hover td{background:var(--blue-lt)}
 #mgTbl tbody tr.sel{background:rgba(0,82,217,.06)}
 #mgTbl tbody tr.sel td{border-color:rgba(0,82,217,.12)}
 /* 水平柱状图 */
-/* 维度评分条 — 大厂风格 */
-.bar-c{display:flex;align-items:center;gap:12px;padding:10px 0}
-.bar-c .bar-lbl{font-size:13px;color:var(--txt2);width:72px;flex-shrink:0;font-weight:500}
-.bar-c .bar-trk{flex:1;height:8px;background:#eef0f4;border-radius:4px;overflow:hidden}
-.bar-c .bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:0}
-.bar-c .bar-val{font-size:13px;color:var(--txt);font-weight:600;width:44px;flex-shrink:0;font-family:"SF Mono",Consolas,Monaco,monospace}
-.b1{background:linear-gradient(90deg,var(--blue),#60a5fa)}.b2{background:linear-gradient(90deg,var(--green),#4ade80)}.b3{background:linear-gradient(90deg,var(--orange),#fb923c)}.b4{background:linear-gradient(90deg,var(--purple),#a78bfa)}.b5{background:linear-gradient(90deg,#0ea5e9,#38bdf8)}
+/* 维度评分可视化 — 图形仪表卡 */
+.dim-card{padding:14px 0;border-bottom:1px solid var(--brd2)}
+.dim-card:last-child{border-bottom:none}
+.dim-card-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.dim-card-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dim-card-lbl{font-size:14px;font-weight:600;color:var(--txt);flex:1}
+.dim-card-score{font-size:20px;font-weight:700;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.dim-card-unit{font-size:11px;color:var(--txt3);font-weight:400;margin-left:1px}
+.dim-gauge{height:18px;background:#eef0f4;border-radius:9px;overflow:hidden;position:relative}
+.dim-gauge-fill{height:100%;border-radius:9px;transition:width .8s cubic-bezier(.4,0,.2,1);min-width:0}
+.g1.dim-gauge-fill{background:linear-gradient(90deg,var(--blue),#60a5fa)}.g1.dim-card-dot{background:var(--blue)}
+.g2.dim-gauge-fill{background:linear-gradient(90deg,var(--green),#4ade80)}.g2.dim-card-dot{background:var(--green)}
+.g3.dim-gauge-fill{background:linear-gradient(90deg,var(--orange),#fb923c)}.g3.dim-card-dot{background:var(--orange)}
+.g4.dim-gauge-fill{background:linear-gradient(90deg,var(--purple),#a78bfa)}.g4.dim-card-dot{background:var(--purple)}
+.g5.dim-gauge-fill{background:linear-gradient(90deg,#0ea5e9,#38bdf8)}.g5.dim-card-dot{background:#0ea5e9}
 /* 表格内评分条 */
 .row-bar{display:flex;align-items:center;gap:8px}
 .row-bar-fill{height:6px;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:3px;min-width:0;transition:width .5s ease}
 .row-bar b{font-size:13px;flex-shrink:0;font-weight:600}
 .overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:768px){
-  .bar-c .bar-lbl{width:56px;font-size:12px}
   .overview-grid{grid-template-columns:1fr}
 }
 
@@ -246,6 +253,7 @@ tr:hover td{background:var(--blue-lt)}
 .hero-score{font-size:56px;font-weight:700;line-height:1;color:var(--txt);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-2px}
 .hero-unit{font-size:14px;color:var(--txt3);margin-top:4px}
 .hero-meta{font-size:11px;color:var(--txt3);margin-top:6px}
+.rate-rule{display:block;font-size:11px;color:var(--txt3);font-weight:400;margin-top:2px}
 .hero-right{flex:1;min-width:0}
 .dist-section{border-left:1px solid var(--brd2);padding-left:24px}
 .dist-title{font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:12px}
@@ -373,7 +381,7 @@ function renderDashboard(){
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
       <a href="https://pick12038.github.io/studio-survey/test.html" target="_blank" class="side-link" style="border-color:var(--red);color:var(--red)">🧪 测试学生端</a>
-      <div class="side-foot">v2.10 · 画室专用</div>
+      <div class="side-foot">v2.11 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
@@ -445,7 +453,7 @@ async function switchPg(pg){
   else if(pg==='export')renderExport(el);
 }
 
-// ===== 概览（画室场景版 v2.10） =====
+// ===== 概览（画室场景版 v2.11） =====
 function renderOverview(el){
   const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length;
 
@@ -480,13 +488,15 @@ function renderOverview(el){
     classCards+=`<div class="cls-card ${cls}"><div class="cls-card-name">${x(c.name)}</div><div class="cls-card-mid"><div class="cls-card-bar"><div class="cls-card-fill" style="width:${pct}%"></div></div><div class="cls-card-score">${avg>0?avg.toFixed(1):"-"}</div></div><div class="cls-card-sub">${cnt} 份</div></div>`;
   }
 
-  // 维度均分（10分制：直接对该维度所有评分求平均，不做教师层聚合）
-  const barColors=["b1","b2","b3","b4","b5"];
+  // 维度均分可视化 — 图形仪表卡
+  const gaugeColors=["g1","g2","g3","g4","g5"];
   let bars="";DM.forEach((d,i)=>{
     const allScores=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.dim===d;}).map(r=>r.score);
     const avg=allScores.length?allScores.reduce((a,b)=>a+b,0)/allScores.length:0;
     const pct=avg>0?Math.min(100,Math.round((avg/10)*100)):0;
-    bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${avg>0?avg.toFixed(1):"-"}</div></div>`;
+    const scoreText=avg>0?avg.toFixed(1):"-";
+    const gc=gaugeColors[i%gaugeColors.length];
+    bars+=`<div class="dim-card"><div class="dim-card-hd"><span class="dim-card-dot ${gc}"></span><span class="dim-card-lbl">${d}</span><span class="dim-card-score">${scoreText}<span class="dim-card-unit">/10</span></span></div><div class="dim-gauge"><div class="dim-gauge-fill ${gc}" style="width:${pct}%"></div></div></div>`;
   });
 
   // 综合建议：优选高质量内容（过滤短内容，按长度取前5条）
@@ -506,7 +516,7 @@ function renderOverview(el){
   el.innerHTML=`
     <div class="hero-panel">
       <div class="hero-left">
-        <div class="hero-label">好评率</div>
+        <div class="hero-label">好感度<span class="rate-rule">（≥8分为好评）</span></div>
         <div class="hero-score" style="color:${rateColor}">${goodRate!=='-'?goodRate+'%':'-'}</div>
         <div class="hero-meta">共 ${totalRatings} 条评分${badCount>0?` · <span style="color:var(--red);font-weight:600">${badCount} 条需关注</span>`:''}</div>
       </div>
