@@ -449,19 +449,19 @@ async function switchPg(pg){
 function renderOverview(el){
   const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length;
 
-  // 总体满意度（10分制：每条完整提交5维度总分÷2.5取平均）
+  // 总体满意度（10分制：每条完整提交5维度总分÷5取平均）
   const sidScores={};(ca.r||[]).forEach(r=>{if(!sidScores[r.submission_id])sidScores[r.submission_id]=[];sidScores[r.submission_id].push(r.score);});
   const fullSids=Object.keys(sidScores).filter(sid=>sidScores[sid].length===5);
   let overall10="-",overallN=0;
   if(fullSids.length){
     const totals=fullSids.map(sid=>sidScores[sid].reduce((a,b)=>a+b,0));
-    overall10=(totals.reduce((a,b)=>a+b,0)/fullSids.length/2.5).toFixed(1);
+    overall10=(totals.reduce((a,b)=>a+b,0)/fullSids.length/5).toFixed(1);
     overallN=fullSids.length;
   }
 
-  // 评分分布（维度分×2→10分制→5星桶聚合：9-10→5★,7-8→4★,5-6→3★,3-4→2★,1-2→1★）
+  // 评分分布（1-10分→5星桶聚合：9-10→5★,7-8→4★,5-6→3★,3-4→2★,1-2→1★）
   const dist=[0,0,0,0,0];
-  (ca.r||[]).forEach(r=>{const s=Math.round(r.score*2);const star=s>=9?5:s>=7?4:s>=5?3:s>=3?2:1;dist[5-star]++;});
+  (ca.r||[]).forEach(r=>{const s=Math.round(r.score);const star=s>=9?5:s>=7?4:s>=5?3:s>=3?2:1;dist[5-star]++;});
   const maxDist=Math.max(...dist,1);
   let distHtml="";[5,4,3,2,1].forEach((star,i)=>{
     const cnt=dist[i],pct=Math.round(cnt/maxDist*100);
@@ -469,28 +469,26 @@ function renderOverview(el){
     distHtml+=`<div class="dist-row"><span class="dist-star">${"★".repeat(star)}${"☆".repeat(5-star)} ${range}</span><div class="dist-trk"><div class="dist-bar d${star}" style="width:${pct}%"></div></div><span class="dist-cnt">${cnt}</span></div>`;
   });
 
-  // 班级满意度卡片（10分制：维度均分×2，阈值≥8绿/6-7.9黄/<6红）
+  // 班级满意度卡片（10分制：直接取维度均分，阈值≥8绿/6-7.9黄/<6红）
   const classSubs={};(ca.s||[]).forEach(s=>{if(!classSubs[s.class_id])classSubs[s.class_id]=0;classSubs[s.class_id]++;});
   let classCards="";
   for(let c of ca.c){
     const cnt=classSubs[c.id]||0;
     const sids=new Set((ca.s||[]).filter(s=>s.class_id===c.id).map(s=>s.id));
     const scores=(ca.r||[]).filter(r=>sids.has(r.submission_id)).map(r=>r.score);
-    const rawAvg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:0;
-    const savg10=rawAvg*2;
-    const pct=savg10>0?Math.round((savg10/10)*100):0;
-    const cls=savg10>0?(savg10>=8?"hi":savg10>=6?"md":"lo"):"na";
-    classCards+=`<div class="cls-card ${cls}"><div class="cls-card-name">${x(c.name)}</div><div class="cls-card-mid"><div class="cls-card-bar"><div class="cls-card-fill" style="width:${pct}%"></div></div><div class="cls-card-score">${savg10>0?savg10.toFixed(1):"-"}</div></div><div class="cls-card-sub">${cnt} 份</div></div>`;
+    const avg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:0;
+    const pct=avg>0?Math.round((avg/10)*100):0;
+    const cls=avg>0?(avg>=8?"hi":avg>=6?"md":"lo"):"na";
+    classCards+=`<div class="cls-card ${cls}"><div class="cls-card-name">${x(c.name)}</div><div class="cls-card-mid"><div class="cls-card-bar"><div class="cls-card-fill" style="width:${pct}%"></div></div><div class="cls-card-score">${avg>0?avg.toFixed(1):"-"}</div></div><div class="cls-card-sub">${cnt} 份</div></div>`;
   }
 
-  // 维度均分（10分制：直接对该维度所有评分求平均×2，不做教师层聚合）
+  // 维度均分（10分制：直接对该维度所有评分求平均，不做教师层聚合）
   const barColors=["b1","b2","b3","b4","b5"];
   let bars="";DM.forEach((d,i)=>{
     const allScores=(ca.r||[]).filter(r=>{const p=pd(r.dimension);return p&&p.dim===d;}).map(r=>r.score);
-    const rawAvg=allScores.length?allScores.reduce((a,b)=>a+b,0)/allScores.length:0;
-    const score10=rawAvg*2;
-    const pct=score10>0?Math.min(100,Math.round((score10/10)*100)):0;
-    bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${score10>0?score10.toFixed(1):"-"}</div></div>`;
+    const avg=allScores.length?allScores.reduce((a,b)=>a+b,0)/allScores.length:0;
+    const pct=avg>0?Math.min(100,Math.round((avg/10)*100)):0;
+    bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${avg>0?avg.toFixed(1):"-"}</div></div>`;
   });
 
   // 综合建议：优选高质量内容（过滤短内容，按长度取前5条）
@@ -527,8 +525,8 @@ function renderOverview(el){
       <div class="kpi-mini"><span class="kpi-mini-n">${tc}</span><span class="kpi-mini-l">总提交</span></div>
       <div class="kpi-mini"><span class="kpi-mini-n">${cc}</span><span class="kpi-mini-l">覆盖班级</span></div>
       <div class="kpi-mini"><span class="kpi-mini-n">${tc2}</span><span class="kpi-mini-l">在职教师</span></div>
-      <div class="kpi-mini"><span class="kpi-mini-n" id="kpi-canteen">-</span><span class="kpi-mini-l">饭堂均分 /5</span></div>
-      <div class="kpi-mini"><span class="kpi-mini-n" id="kpi-dorm">-</span><span class="kpi-mini-l">宿舍均分 /5</span></div>
+      <div class="kpi-mini"><span class="kpi-mini-n" id="kpi-canteen">-</span><span class="kpi-mini-l">饭堂均分 /10</span></div>
+      <div class="kpi-mini"><span class="kpi-mini-n" id="kpi-dorm">-</span><span class="kpi-mini-l">宿舍均分 /10</span></div>
     </div>
 
     <div class="overview-grid">
@@ -670,7 +668,7 @@ function renderExport(el){
 function renderSugs(cat,cid){
   const sugs=pS(cat,cid);
   if(!sugs.length)return`<div class="empty"><div class="empty-ico">📭</div>暂无建议</div>`;
-  let h="";sugs.forEach(s=>h+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${x(s.lines.join("\n"))}</div></div>`);
+  let h="";sugs.forEach(s=>h+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${x(s.flt.join("<br>"))}</div></div>`);
   return h;
 }
 
