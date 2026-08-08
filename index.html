@@ -373,7 +373,7 @@ function renderDashboard(){
       </nav>
       <a href="https://pick12038.github.io/studio-survey/" target="_blank" class="side-link">📋 学生问卷端</a>
       <a href="https://pick12038.github.io/studio-survey/test.html" target="_blank" class="side-link" style="border-color:var(--red);color:var(--red)">🧪 测试学生端</a>
-      <div class="side-foot">v2.7 · 画室专用</div>
+      <div class="side-foot">v2.8 · 画室专用</div>
     </aside>
     <div class="main">
       <header class="topbar">
@@ -450,7 +450,17 @@ function renderOverview(el){
   const tc=ca.tot,cc=ca.c.length,tc2=ca.t.length,rc=ca.r?ca.r.length:0;
   let tAvg="-";if(ca.r&&ca.r.length)tAvg=ag(ca.r.map(r=>r.score));
 
-  // 评分分布 1-5星
+  // 总体满意度（10分制：每条提交5维度总分/2.5取平均）
+  const sidScores={};(ca.r||[]).forEach(r=>{if(!sidScores[r.submission_id])sidScores[r.submission_id]=[];sidScores[r.submission_id].push(r.score);});
+  const fullSids=Object.keys(sidScores).filter(sid=>sidScores[sid].length===5);
+  let overall10="-",overallN=0;
+  if(fullSids.length){
+    const totals=fullSids.map(sid=>sidScores[sid].reduce((a,b)=>a+b,0));
+    overall10=(totals.reduce((a,b)=>a+b,0)/fullSids.length/2.5).toFixed(1);
+    overallN=fullSids.length;
+  }
+
+  // 评分分布 1-5星（维度分数分布）
   const dist=[0,0,0,0,0];
   (ca.r||[]).forEach(r=>{const s=Math.round(r.score);if(s>=1&&s<=5)dist[5-s]++;});
   const maxDist=Math.max(...dist,1);
@@ -482,25 +492,31 @@ function renderOverview(el){
     bars+=`<div class="bar-c"><div class="bar-lbl">${d}</div><div class="bar-trk"><div class="bar-fill ${barColors[i%barColors.length]}" style="width:${pct}%"></div></div><div class="bar-val">${overallAvg>0?overallAvg.toFixed(1):"-"}</div></div>`;
   });
 
-  // 综合建议
+  // 综合建议：优选高质量内容（过滤短内容，按长度取前5条）
   const sugs=pS("综合");
   let sugHtml="";
   if(sugs.length){
     const prefix="[综合:";
-    sugs.forEach(s=>{const cl=s.lines.map(l=>l.startsWith(prefix)?l.slice(prefix.length).replace("]","").trim():l).filter(l=>l).join("<br>");sugHtml+=`<div class="sug-it"><div class="meta">${mS(s.submission_id)}</div><div class="body">${cl}</div></div>`;});
+    const processed=sugs.map(s=>{
+      const cl=s.lines.map(l=>l.startsWith(prefix)?l.slice(prefix.length).replace("]","").trim():l).filter(l=>l).join("<br>");
+      return {id:s.submission_id,body:cl,len:cl.replace(/<br>/g,"").length};
+    }).filter(x=>x.len>=15).sort((a,b)=>b.len-a.len);
+    const top=processed.slice(0,5);
+    top.forEach(s=>{sugHtml+=`<div class="sug-it"><div class="meta">${mS(s.id)}</div><div class="body">${s.body}</div></div>`;});
+    if(processed.length>5)sugHtml+=`<div class="sug-more">另有 ${processed.length-5} 条建议未展示</div>`;
   }
 
   el.innerHTML=`
     <div class="hero-panel">
       <div class="hero-left">
         <div class="hero-label">总体满意度</div>
-        <div class="hero-score">${tAvg}</div>
-        <div class="hero-unit">/ 5.0</div>
-        <div class="hero-meta">基于 ${rc} 条教师评分</div>
+        <div class="hero-score">${overall10}</div>
+        <div class="hero-unit">/ 10.0</div>
+        <div class="hero-meta">${overallN?`${overallN} 份完整评价`:'暂无完整评价'}</div>
       </div>
       <div class="hero-right">
         <div class="dist-section">
-          <div class="dist-title">评分分布</div>
+          <div class="dist-title">维度分数分布（1-5分）</div>
           ${distHtml||'<div class="empty" style="padding:10px;font-size:12px">暂无评分</div>'}
         </div>
       </div>
